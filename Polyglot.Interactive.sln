@@ -1,0 +1,36 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31015.32
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Polyglot.Interactive", "src\Polyglot.Interactive\Polyglot.Interactive.csproj", "{A5D6365C-36D6-47CF-AA92-AF6803BC2B43}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{60F5A349-C043-414A-BF31-91B5F9F59D0D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Polyglot.Interactive.Tests", "src\Polyglot.Interactive.Tests\Polyglot.Interactive.Tests.csproj", "{054E0854-8C7F-4A77-8569-8E095363A2A7}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A5D6365C-36D6-47CF-AA92-AF6803BC2B43}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A5D6365C-36D6-47CF-AA92-AF6803BC2B43}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A5D6365C-36D6-47CF-AA92-AF6803BC2B43}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A5D6365C-36D6-47CF-AA92-AF6803BC2B43}.Release|Any CPU.Build.0 = Release|Any CPU
+		{054E0854-8C7F-4A77-8569-8E095363A2A7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{054E0854-8C7F-4A77-8569-8E095363A2A7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{054E0854-8C7F-4A77-8569-8E095363A2A7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{054E0854-8C7F-4A77-8569-8E095363A2A7}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{054E0854-8C7F-4A77-8569-8E095363A2A7} = {60F5A349-C043-414A-BF31-91B5F9F59D0D}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {027AA058-71DC-4E33-800B-9D21D65092E2}
+	EndGlobalSection
+EndGlobal
