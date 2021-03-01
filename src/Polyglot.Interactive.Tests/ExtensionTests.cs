@@ -1,10 +1,7 @@
-﻿using System;
-using System.Linq;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.DotNet.Interactive.Commands;
-using Microsoft.DotNet.Interactive.Events;
 using Polyglot.Interactive.Tests.Utilities;
 using Xunit;
 using Xunit.Abstractions;
@@ -59,6 +56,7 @@ namespace Polyglot.Interactive.Tests
             var extension = new KernelExtension();
             var kernel = CreateKernel();
             await extension.OnLoadAsync(kernel);
+            await kernel.SendAsync(new SubmitCode("#!game-time --user-id test --game-id gameOne"), CancellationToken.None);
 
             await kernel.SendAsync(new SubmitCode("\"Hello World\""), CancellationToken.None);
 
