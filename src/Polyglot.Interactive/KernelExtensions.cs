@@ -73,7 +73,7 @@ namespace Polyglot.Interactive
                        
                         await next(kernelCommand, c);
 
-                        // before is all done we append a final action to submit alle vents for the command
+                        // before is all done we append a final action to submit all vents for the command
                         var report = await client.SubmitActions(c.Command, c.HandlingKernel, events);
                         c.Display(report);
                         break;

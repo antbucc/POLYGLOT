@@ -59,7 +59,7 @@ namespace Polyglot.Interactive.Tests
             await kernel.SendAsync(new SubmitCode("#!game-time --user-id test --game-id gameOne"), CancellationToken.None);
 
             await kernel.SendAsync(new SubmitCode("\"Hello World\""), CancellationToken.None);
-
+            
             KernelEvents.Should().NotContainErrors();
 
         }
