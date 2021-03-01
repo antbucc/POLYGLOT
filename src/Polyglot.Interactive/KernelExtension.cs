@@ -27,12 +27,13 @@ namespace Polyglot.Interactive
             
         }
 
-        private async Task InstallCsharpGameEngineAsync(CSharpKernel kernel)
+        private Task InstallCsharpGameEngineAsync(CSharpKernel kernel)
         {
             kernel.UseSubmitCodeInterceptor();
             KernelInvocationContext.Current?.Display(
                 @"Installed Game Engine Integration for `CSharp Kernel`.",
                 "text/markdown");
+            return Task.CompletedTask;
         }
     }
 }
