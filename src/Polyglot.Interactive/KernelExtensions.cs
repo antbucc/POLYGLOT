@@ -67,20 +67,22 @@ namespace Polyglot.Interactive
                     case SubmitCode submitCode:
                         // let/s record all events
                         var events = new List<KernelEvent>();
-                        var subscription = c.KernelEvents.Subscribe(events.Add); 
+                        var subscription = c.KernelEvents.Subscribe(events.Add);
+                        subscription.Dispose();
+                        var client = GameEngineClient.Current;
+                       
+                        await next(kernelCommand, c);
 
                         // before is all done we append a final action to submit alle vents for the command
-                        c.OnComplete(async context =>
-                        {
-                            subscription.Dispose();
-                            var client = GameEngineClient.Current;
-                            var report = await client.SubmitActions(context.Command, context.HandlingKernel, events);
-                            context.Display(report);
-                        });
+                        var report = await client.SubmitActions(c.Command, c.HandlingKernel, events);
+                        c.Display(report);
                         break;
+                    default:
+                         await next(kernelCommand, c);
+                         break;
                 }
-
-                await next(kernelCommand, c);
+                
+             
             });
 
             return kernel;
