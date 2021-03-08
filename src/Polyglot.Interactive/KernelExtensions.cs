@@ -26,8 +26,12 @@ namespace Polyglot.Interactive
                     "--game-id",
                     "The game id to use.");
 
-                var userIdOption = new Option<string>(
-                    "--user-id",
+                var gameTokenOption = new Option<string>(
+                    "--game-token",
+                    "The game token to use.");
+
+                var playerIdOption = new Option<string>(
+                    "--player-id",
                     "The user id to use.");
 
                 var serverUrlOption = new Option<string>(
@@ -36,10 +40,10 @@ namespace Polyglot.Interactive
 
                 var command =  new Command("#!game-time", "Configures the game engine for the current notebook.")
                 {
-                    Handler = CommandHandler.Create<string,string,string, KernelInvocationContext>((gameId, userId, serverUrl,  context) =>
+                    Handler = CommandHandler.Create<string,string,string,string, KernelInvocationContext>((gameId, gameToken, playerId, serverUrl,  context) =>
                     {
                         
-                        GameEngineClient.Configure(gameId, userId, serverUrl);
+                        GameEngineClient.Configure(gameId, gameToken, playerId, serverUrl);
                        
                         KernelInvocationContext.Current?.Display(
                             @"Game Engine configuration is now complete.",
@@ -50,7 +54,8 @@ namespace Polyglot.Interactive
                     
                 };
                 command.AddOption(gameIdOption);
-                command.AddOption(userIdOption);
+                command.AddOption(gameTokenOption);
+                command.AddOption(playerIdOption);
                 command.AddOption(serverUrlOption);
                 return command;
             }
@@ -75,7 +80,10 @@ namespace Polyglot.Interactive
 
                         // before is all done we append a final action to submit all vents for the command
                         var report = await client.SubmitActions(c.Command, c.HandlingKernel, events);
-                        c.Display(report);
+                        if (report is { })
+                        {
+                            c.Display(report);
+                        }
                         break;
                     default:
                          await next(kernelCommand, c);

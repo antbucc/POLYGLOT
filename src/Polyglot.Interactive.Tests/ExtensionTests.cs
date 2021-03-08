@@ -44,7 +44,7 @@ namespace Polyglot.Interactive.Tests
             await extension.OnLoadAsync(kernel);
 
             GameEngineClient.Current.Should().BeNull();
-            await kernel.SendAsync(new SubmitCode("#!game-time --user-id test --game-id gameOne"), CancellationToken.None);
+            await kernel.SendAsync(new SubmitCode("#!game-time --player-id test --game-id gameOne --game-token 123"), CancellationToken.None);
             KernelEvents.Should().NotContainErrors();
 
             GameEngineClient.Current.Should().NotBeNull();
@@ -56,7 +56,7 @@ namespace Polyglot.Interactive.Tests
             var extension = new KernelExtension();
             var kernel = CreateKernel();
             await extension.OnLoadAsync(kernel);
-            await kernel.SendAsync(new SubmitCode("#!game-time --user-id test --game-id gameOne"), CancellationToken.None);
+            await kernel.SendAsync(new SubmitCode("#!game-time --player-id my_user_id --game-id polyglot --game-token 123"), CancellationToken.None);
 
             await kernel.SendAsync(new SubmitCode("\"Hello World\""), CancellationToken.None);
             

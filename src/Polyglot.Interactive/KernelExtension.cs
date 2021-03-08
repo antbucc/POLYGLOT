@@ -33,6 +33,13 @@ namespace Polyglot.Interactive
             KernelInvocationContext.Current?.Display(
                 @"Installed Game Engine Integration for `CSharp Kernel`.",
                 "text/markdown");
+
+            Formatter.Register<GameStateReport>((report, writer) =>
+            {
+                var htmlReport = "<h1>done</h1>";
+                writer.Write(htmlReport);
+            }, HtmlFormatter.MimeType);
+
             return Task.CompletedTask;
         }
     }
