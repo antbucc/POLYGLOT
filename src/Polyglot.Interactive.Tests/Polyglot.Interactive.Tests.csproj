@@ -9,10 +9,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.DotNet.Interactive" Version="1.0.0-beta.21116.4" />
-    <PackageReference Include="Microsoft.DotNet.Interactive.CSharp" Version="1.0.0-beta.21116.4" />
-    <PackageReference Include="Microsoft.DotNet.Interactive.FSharp" Version="1.0.0-beta.21116.4" />
-    <PackageReference Include="Microsoft.DotNet.Interactive.PowerShell" Version="1.0.0-beta.21116.4" />
+    <PackageReference Include="Microsoft.DotNet.Interactive" Version="1.0.0-beta.21161.5" />
+    <PackageReference Include="Microsoft.DotNet.Interactive.CSharp" Version="1.0.0-beta.21161.5" />
+    <PackageReference Include="Microsoft.DotNet.Interactive.FSharp" Version="1.0.0-beta.21161.5" />
+    <PackageReference Include="Microsoft.DotNet.Interactive.PowerShell" Version="1.0.0-beta.21161.5" />
     <PackageReference Include="Serilog.Sinks.RollingFileAlternate" Version="2.0.9" />
     <PackageReference Include="FluentAssertions" Version="5.10.3" />
     <PackageReference Include="FluentAssertions.Json" Version="5.5.0" />

@@ -128,7 +128,6 @@ namespace Polyglot.Interactive.Tests
         private (Kernel, IEnumerable<string>) CreateCSharpKernel()
         {
             return (new CSharpKernel()
-                .UseDefaultFormatting()
                 .UseNugetDirective()
                 .UseKernelHelpers()
                 .UseDotNetVariableSharing()
