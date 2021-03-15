@@ -86,11 +86,11 @@ namespace Polyglot.Interactive
                 // intercept code submission
                 switch (kernelCommand)
                 {
-                    case SubmitCode _:
+                    case SubmitCode submitCode:
                         var client = GameEngineClient.Current;
 
                         // before is all done we append a final action to submit all vents for the command
-                        if (client != null)
+                        if (client != null && !submitCode.Code.StartsWith("#!"))
                         { // let/s record all events
                             var events = new List<KernelEvent>();
                             var subscription = c.KernelEvents.Subscribe(events.Add);
