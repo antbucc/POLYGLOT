@@ -85,7 +85,7 @@ namespace Polyglot.Interactive
 
         public static T UseSubmitCodeInterceptor<T>(this T kernel)
             where T : Kernel
-        {
+        {   
             kernel.AddMiddleware(async (kernelCommand, c, next) =>
             {
                 // intercept code submission
@@ -95,8 +95,9 @@ namespace Polyglot.Interactive
                         var client = GameEngineClient.Current;
 
                         // before is all done we append a final action to submit all vents for the command
-                        if (client != null && !submitCode.Code.StartsWith("#!"))
-                        { // let/s record all events
+                        if ( c.HandlingKernel == kernel && client != null && !submitCode.Code.StartsWith("#!"))
+                        { 
+                            // let's record all events
                             var events = new List<KernelEvent>();
                             var subscription = c.KernelEvents.Subscribe(events.Add);
                             
