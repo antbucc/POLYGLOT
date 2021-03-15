@@ -48,7 +48,7 @@ namespace Polyglot.Interactive.Tests
 
 
             GameEngineClient.Current.Should().BeNull();
-            await kernel.SendAsync(new SubmitCode("#!start-game --player-id papyrus --game-id 603fced708813b0001baa2cc --game-token papyrus0704!"), CancellationToken.None);
+            await kernel.SendAsync(new SubmitCode("#!start-game --player-id playerOne --user-id papyrus --game-id 603fced708813b0001baa2cc --password papyrus0704!"), CancellationToken.None);
             KernelEvents.Should().NotContainErrors();
 
             GameEngineClient.Current.Should().NotBeNull();
@@ -61,7 +61,7 @@ namespace Polyglot.Interactive.Tests
             var kernel = CreateKernel();
             await extension.OnLoadAsync(kernel);
             
-            await kernel.SendAsync(new SubmitCode("#!start-game --player-id Toto1 --game-id 603fced708813b0001baa2cc --game-token papyrus0704!"), CancellationToken.None);
+            await kernel.SendAsync(new SubmitCode("#!start-game --player-id playerOne --user-id papyrus --game-id 603fced708813b0001baa2cc --password papyrus0704!"), CancellationToken.None);
 
             await kernel.SendAsync(new SubmitCode("\"Hello World\""), CancellationToken.None);
             
@@ -76,7 +76,7 @@ namespace Polyglot.Interactive.Tests
             var kernel = CreateKernel();
             await extension.OnLoadAsync(kernel);
 
-            await kernel.SendAsync(new SubmitCode("#!start-game --player-id papyrus --game-id 603fced708813b0001baa2cc --game-token papyrus0704!"), CancellationToken.None);
+            await kernel.SendAsync(new SubmitCode("#!start-game --player-id playerOne --user-id papyrus --game-id 603fced708813b0001baa2cc --password papyrus0704!"), CancellationToken.None);
 
             await kernel.SendAsync(new SubmitCode("#!lsmagic"), CancellationToken.None);
 
@@ -94,7 +94,7 @@ namespace Polyglot.Interactive.Tests
             var kernel = CreateKernel();
             await extension.OnLoadAsync(kernel);
 
-            await kernel.SendAsync(new SubmitCode("#!start-game --player-id papyrus --game-id 603fced708813b0001baa2cc --game-token papyrus0704!"), CancellationToken.None);
+            await kernel.SendAsync(new SubmitCode("#!start-game --player-id playerOne --user-id papyrus --game-id 603fced708813b0001baa2cc --password papyrus0704!"), CancellationToken.None);
 
             await kernel.SendAsync(new SubmitCode("not valid at all"), CancellationToken.None);
 

@@ -20,25 +20,30 @@ namespace Polyglot.Interactive
 
     public class GameEngineClient
     {
-        private bool _authenticated;
         private GameStatus _gameStatus;
         private readonly HttpClient _client;
         private DateTime? _lastRun;
         public string GameId { get; }
-        public string Token { get; }
+        public string UserId { get; }
+        public string Password { get; }
         public string PlayerId { get; }
         public string ServerUrl { get; }
 
-        private GameEngineClient(string gameId, string token, string playerId, string serverUrl)
+        private GameEngineClient(string gameId, string userId, string password, string playerId, string serverUrl)
         {
             if (string.IsNullOrWhiteSpace(gameId))
             {
                 throw new ArgumentException("Value cannot be null or whitespace.", nameof(gameId));
             }
 
-            if (string.IsNullOrWhiteSpace(token))
+            if (string.IsNullOrWhiteSpace(userId))
             {
-                throw new ArgumentException("Value cannot be null or whitespace.", nameof(token));
+                throw new ArgumentException("Value cannot be null or whitespace.", nameof(userId));
+            }
+
+            if (string.IsNullOrWhiteSpace(password))
+            {
+                throw new ArgumentException("Value cannot be null or whitespace.", nameof(password));
             }
 
             if (string.IsNullOrWhiteSpace(playerId))
@@ -52,7 +57,8 @@ namespace Polyglot.Interactive
             }
 
             GameId = gameId;
-            Token = token;
+            UserId = userId;
+            Password = password;
             PlayerId = playerId;
             ServerUrl = serverUrl;
             _client = new HttpClient();
@@ -60,9 +66,9 @@ namespace Polyglot.Interactive
 
         public static GameEngineClient Current { get; set; }
 
-        public static void Configure(string gameId, string token, string playerId, string serverUrl = null)
+        public static void Configure(string gameId, string userId, string password, string playerId, string serverUrl = null)
         {
-            Current = new GameEngineClient(gameId, token, playerId,
+            Current = new GameEngineClient(gameId, userId, password, playerId,
                 string.IsNullOrWhiteSpace(serverUrl) ? DefaultServerUrl : serverUrl);
         }
 
@@ -111,7 +117,7 @@ namespace Polyglot.Interactive
 
         private void EnsureAuthentication()
         {
-            var authToken = Encoding.ASCII.GetBytes($"{PlayerId}:{Token}");
+            var authToken = Encoding.ASCII.GetBytes($"{UserId}:{Password}");
             _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic",
                 Convert.ToBase64String(authToken));
         }

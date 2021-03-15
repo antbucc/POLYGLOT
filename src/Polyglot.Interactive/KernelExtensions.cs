@@ -43,8 +43,12 @@ namespace Polyglot.Interactive
                     "--game-id",
                     "The game id to use.");
 
-                var gameTokenOption = new Option<string>(
-                    "--game-token",
+                var passwordOption = new Option<string>(
+                    "--password",
+                    "The game token to use.");
+
+                var userIdOption = new Option<string>(
+                    "--user-id",
                     "The game token to use.");
 
                 var playerIdOption = new Option<string>(
@@ -57,12 +61,12 @@ namespace Polyglot.Interactive
 
                 var command = new Command("#!start-game", "Configures the game engine for the current notebook.")
                 {
-                    Handler = CommandHandler.Create<string, string, string, string, KernelInvocationContext>((gameId, gameToken, playerId, serverUrl, context) =>
+                    Handler = CommandHandler.Create<string, string,string, string, string, KernelInvocationContext>((gameId, userId, password, playerId, serverUrl, context) =>
                        {
 
-                           GameEngineClient.Configure(gameId, gameToken, playerId, serverUrl);
+                           GameEngineClient.Configure(gameId, userId, password, playerId, serverUrl);
 
-                           KernelInvocationContext.Current?.Display(
+                           context?.Display(
                                @"Game Engine configuration is now complete.",
                                "text/markdown");
 
@@ -70,8 +74,9 @@ namespace Polyglot.Interactive
                        })
 
                 };
-                command.AddOption(gameIdOption);
-                command.AddOption(gameTokenOption);
+                command.AddOption(gameIdOption); 
+                command.AddOption(userIdOption);
+                command.AddOption(passwordOption);
                 command.AddOption(playerIdOption);
                 command.AddOption(serverUrlOption);
                 return command;
