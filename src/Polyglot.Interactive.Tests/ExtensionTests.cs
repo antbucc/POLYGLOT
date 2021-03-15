@@ -56,7 +56,7 @@ namespace Polyglot.Interactive.Tests
             var extension = new KernelExtension();
             var kernel = CreateKernel();
             await extension.OnLoadAsync(kernel);
-            await kernel.SendAsync(new SubmitCode("#!game-time --player-id my_user_id --game-id polyglot --game-token 123"), CancellationToken.None);
+            await kernel.SendAsync(new SubmitCode("#!game-time --player-id Diego1 --game-id 603fced708813b0001baa2cc --game-token 123"), CancellationToken.None);
 
             await kernel.SendAsync(new SubmitCode("\"Hello World\""), CancellationToken.None);
             

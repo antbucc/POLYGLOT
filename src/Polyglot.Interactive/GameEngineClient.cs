@@ -9,6 +9,8 @@ using Microsoft.DotNet.Interactive;
 using Microsoft.DotNet.Interactive.Commands;
 using Microsoft.DotNet.Interactive.Events;
 using Microsoft.DotNet.Interactive.Formatting;
+using System.Text;
+using System.Net.Http.Headers;
 
 namespace Polyglot.Interactive
 {
@@ -55,7 +57,8 @@ namespace Polyglot.Interactive
             Current = new GameEngineClient(gameId, token, playerId, serverUrl ?? DefaultServerUrl);
         }
 
-        public static string DefaultServerUrl { get; } = "https://dev.smartcommunitylab.it/gamification-v3/exec/game/";
+
+        public static string DefaultServerUrl { get; } = "https://dev.smartcommunitylab.it/gamification-v3/";
 
         public async Task<GameStateReport> SubmitActions(KernelCommand contextCommand, Kernel handlingKernel, List<KernelEvent> events)
         {
@@ -66,19 +69,36 @@ namespace Polyglot.Interactive
             var callUrl = new Uri(ServerUrl);
             var action = "SubmitCode";
 
-            callUrl = new Uri(callUrl, $"{GameId}/action/{action}");
+            callUrl = new Uri(callUrl, $"exec/game/{GameId}/action/{action}");
             var bodyObject = new
             {
                 gameId = GameId,
                 playerId = PlayerId
             };
 
+            
+
+
 
             var response = await client.PostAsync(callUrl, bodyObject.ToBody());
 
             if (response.StatusCode == HttpStatusCode.OK)
             {
-                // get the report here and display
+                // get the player status
+                var callUrlStatus = new Uri(ServerUrl);
+                callUrlStatus = new Uri(callUrlStatus, $"data/game/{GameId}/player/{PlayerId}");
+                
+                var responseStatus = await client.GetAsync(callUrlStatus);
+                if (responseStatus.StatusCode == HttpStatusCode.OK) {
+                    // retrieve the player status from the GET call response and print it
+                   
+                    var contents = await responseStatus.Content.ReadAsStringAsync();
+
+                    // report the new status to the player
+
+                }
+               
+
 
                 return new GameStateReport();
             }
@@ -107,6 +127,15 @@ namespace Polyglot.Interactive
                     gameId = GameId,
                     playerId = PlayerId
                 };
+
+                var userName = "papyrus";
+                var passwd = "papyrus0704!";
+
+                var authToken = Encoding.ASCII.GetBytes($"{userName}:{passwd}");
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic",
+                        Convert.ToBase64String(authToken));
+
+
 
                 var response = await client.PostAsync(callUrl, bodyObject.ToBody());
 
