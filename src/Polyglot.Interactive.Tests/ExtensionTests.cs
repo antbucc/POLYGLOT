@@ -61,7 +61,7 @@ namespace Polyglot.Interactive.Tests
             var kernel = CreateKernel();
             await extension.OnLoadAsync(kernel);
             
-            await kernel.SendAsync(new SubmitCode("#!start-game --player-id papyrus --game-id 603fced708813b0001baa2cc --game-token papyrus0704!"), CancellationToken.None);
+            await kernel.SendAsync(new SubmitCode("#!start-game --player-id Toto1 --game-id 603fced708813b0001baa2cc --game-token papyrus0704!"), CancellationToken.None);
 
             await kernel.SendAsync(new SubmitCode("\"Hello World\""), CancellationToken.None);
             
@@ -96,11 +96,11 @@ namespace Polyglot.Interactive.Tests
 
             await kernel.SendAsync(new SubmitCode("#!start-game --player-id papyrus --game-id 603fced708813b0001baa2cc --game-token papyrus0704!"), CancellationToken.None);
 
-            await kernel.SendAsync(new SubmitCode("valid at all"), CancellationToken.None);
+            await kernel.SendAsync(new SubmitCode("not valid at all"), CancellationToken.None);
 
             var report = await GameEngineClient.Current.GetReportAsync();
 
-            report.Score.Should().Be(0);
+            report.Score.Should().Be(50);
         }
     }
 }

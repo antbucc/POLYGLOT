@@ -111,13 +111,9 @@ namespace Polyglot.Interactive
 
         private void EnsureAuthentication()
         {
-            if (!_authenticated)
-            {
-                var authToken = Encoding.ASCII.GetBytes($"{PlayerId}:{Token}");
-                _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic",
-                    Convert.ToBase64String(authToken));
-                _authenticated = true;
-            }
+            var authToken = Encoding.ASCII.GetBytes($"{PlayerId}:{Token}");
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic",
+                Convert.ToBase64String(authToken));
         }
 
         public async Task<GameStateReport> GetReportAsync()
