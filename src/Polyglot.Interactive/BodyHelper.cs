@@ -9,7 +9,7 @@ namespace Polyglot.Interactive
     internal static class BodyHelper
     {
         private static JsonSerializerOptions Options { get; } =
-            new JsonSerializerOptions(JsonSerializerDefaults.General)
+            new(JsonSerializerDefaults.General)
             {
                 NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals | JsonNumberHandling.AllowReadingFromString,
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
@@ -20,12 +20,17 @@ namespace Polyglot.Interactive
 
         public static StringContent ToBody(this object source)
         {
-            return new StringContent(source.ToJson(), Encoding.UTF8, "application/json");
+            return new(source.ToJson(), Encoding.UTF8, "application/json");
         }
 
         public static string ToJson(this object source)
         {
             return JsonSerializer.Serialize(source, Options);
+        }
+
+        public static T ToObject<T>(this string jsonString)
+        {
+            return JsonSerializer.Deserialize<T>(jsonString, Options);
         }
     }
 }

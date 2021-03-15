@@ -1,7 +1,4 @@
-﻿using System.CommandLine;
-using System.CommandLine.Invocation;
-using System.Diagnostics;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Microsoft.DotNet.Interactive;
 using Microsoft.DotNet.Interactive.CSharp;
 using Microsoft.DotNet.Interactive.Formatting;
@@ -22,23 +19,20 @@ namespace Polyglot.Interactive
             {
                 case CSharpKernel cSharpKernel:
                     await InstallCsharpGameEngineAsync(cSharpKernel);
+                    KernelInvocationContext.Current?.Display(
+                        @"Installed Game Engine Integration for `CSharp Kernel`.",
+                        "text/markdown");
                     break;
             }
+
             
         }
 
         private Task InstallCsharpGameEngineAsync(CSharpKernel kernel)
         {
+           
             kernel.UseSubmitCodeInterceptor();
-            KernelInvocationContext.Current?.Display(
-                @"Installed Game Engine Integration for `CSharp Kernel`.",
-                "text/markdown");
-
-            Formatter.Register<GameStateReport>((report, writer) =>
-            {
-                var htmlReport = "<h1>done</h1>";
-                writer.Write(htmlReport);
-            }, HtmlFormatter.MimeType);
+            Formatter.SetPreferredMimeTypeFor(typeof(GameStateReport), HtmlFormatter.MimeType);
 
             return Task.CompletedTask;
         }
