@@ -48,8 +48,11 @@ namespace Polyglot.Interactive.Tests
 
 
             GameEngineClient.Current.Should().BeNull();
-            await kernel.SendAsync(new SubmitCode("#!start-game --player-id playerOne --user-id papyrus --game-id 603fced708813b0001baa2cc --password papyrus0704!"), CancellationToken.None);
-            KernelEvents.Should().NotContainErrors();
+            var result = await kernel.SendAsync(new SubmitCode("#!start-game --player-id playerOne --user-id papyrus --game-id 603fced708813b0001baa2cc --password papyrus0704!"), CancellationToken.None);
+            result.KernelEvents
+                .ToSubscribedList()
+                .Should()
+                .NotContainErrors();
 
             GameEngineClient.Current.Should().NotBeNull();
         }
@@ -63,9 +66,11 @@ namespace Polyglot.Interactive.Tests
             
             await kernel.SendAsync(new SubmitCode("#!start-game --player-id playerOne --user-id papyrus --game-id 603fced708813b0001baa2cc --password papyrus0704!"), CancellationToken.None);
 
-            await kernel.SendAsync(new SubmitCode("\"Hello World\""), CancellationToken.None);
-            
-            KernelEvents.Should()
+            var result = await kernel.SendAsync(new SubmitCode("\"Hello World\""), CancellationToken.None);
+
+            result.KernelEvents
+                .ToSubscribedList()
+                .Should()
                 .ContainSingle<DisplayedValueProduced>(d => d.Value is GameStateReport);
         }
 
@@ -78,9 +83,11 @@ namespace Polyglot.Interactive.Tests
 
             await kernel.SendAsync(new SubmitCode("#!start-game --player-id playerOne --user-id papyrus --game-id 603fced708813b0001baa2cc --password papyrus0704!"), CancellationToken.None);
 
-            await kernel.SendAsync(new SubmitCode("var newVariable = \"Hello World\";"), CancellationToken.None);
+            var result = await kernel.SendAsync(new SubmitCode("var newVariable = \"Hello World\";"), CancellationToken.None);
 
-            KernelEvents.Should()
+            result.KernelEvents
+                .ToSubscribedList()
+                .Should()
                 .ContainSingle<DisplayedValueProduced>(d => d.Value is GameStateReport);
         }
 
@@ -93,12 +100,12 @@ namespace Polyglot.Interactive.Tests
 
             await kernel.SendAsync(new SubmitCode("#!start-game --player-id playerOne --user-id papyrus --game-id 603fced708813b0001baa2cc --password papyrus0704!"), CancellationToken.None);
 
-            await kernel.SendAsync(new SubmitCode("#!lsmagic"), CancellationToken.None);
+            var result = await kernel.SendAsync(new SubmitCode("#!lsmagic"), CancellationToken.None);
 
-            KernelEvents
+            result.KernelEvents
+                .ToSubscribedList()
                 .OfType<DisplayedValueProduced>()
                 .Should()
-                
                 .NotContain(d => d.Value is GameStateReport);
         }
 
