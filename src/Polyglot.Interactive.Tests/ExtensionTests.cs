@@ -10,6 +10,7 @@ using Xunit.Abstractions;
 
 namespace Polyglot.Interactive.Tests
 {
+    [Collection("no parallel")]
     public class ExtensionTests : LanguageKernelTestBase
     {
         public ExtensionTests(ITestOutputHelper output) : base(output)
@@ -64,6 +65,21 @@ namespace Polyglot.Interactive.Tests
 
             await kernel.SendAsync(new SubmitCode("\"Hello World\""), CancellationToken.None);
             
+            KernelEvents.Should()
+                .ContainSingle<DisplayedValueProduced>(d => d.Value is GameStateReport);
+        }
+
+        [Fact]
+        public async Task intercepts_variables()
+        {
+            var extension = new KernelExtension();
+            var kernel = CreateKernel();
+            await extension.OnLoadAsync(kernel);
+
+            await kernel.SendAsync(new SubmitCode("#!start-game --player-id playerOne --user-id papyrus --game-id 603fced708813b0001baa2cc --password papyrus0704!"), CancellationToken.None);
+
+            await kernel.SendAsync(new SubmitCode("var newVariable = \"Hello World\";"), CancellationToken.None);
+
             KernelEvents.Should()
                 .ContainSingle<DisplayedValueProduced>(d => d.Value is GameStateReport);
         }

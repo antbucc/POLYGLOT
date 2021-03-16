@@ -17,14 +17,14 @@ using Xunit;
 using Xunit.Abstractions;
 using static Pocket.Logger<Polyglot.Interactive.Tests.LanguageKernelTestBase>;
 
-[assembly: CollectionBehavior(DisableTestParallelization = true)]
+[assembly: CollectionBehavior(CollectionBehavior.CollectionPerClass, DisableTestParallelization = true)]
 
 namespace Polyglot.Interactive.Tests
 {
     [LogTestNamesToPocketLogger]
     public abstract class LanguageKernelTestBase : IDisposable
     {
-        private readonly CompositeDisposable _disposables = new CompositeDisposable();
+        private readonly CompositeDisposable _disposables = new();
 
         protected LanguageKernelTestBase(ITestOutputHelper output)
         {

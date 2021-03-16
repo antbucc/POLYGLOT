@@ -75,8 +75,8 @@ namespace Polyglot.Interactive
 
         public static string DefaultServerUrl { get; } = "https://dev.smartcommunitylab.it/gamification-v3/";
 
-        public async Task<GameStateReport> SubmitActions(KernelCommand contextCommand, Kernel handlingKernel,
-            List<KernelEvent> events, TimeSpan runTime)
+        public async Task<GameStateReport> SubmitActions(KernelCommand command, Kernel kernel, 
+            List<KernelEvent> events, IReadOnlyDictionary<string,string> newVariables, TimeSpan runTime)
         {
 
             EnsureAuthentication();
@@ -93,7 +93,8 @@ namespace Polyglot.Interactive
                 timeSinceLastActionms = _lastRun is not null ? (DateTime.Now - _lastRun.Value).TotalMilliseconds : 0,
                 success = events.FirstOrDefault(e => e is CommandFailed) is null,
                 warningCount = events.OfType<DiagnosticsProduced>().SelectMany(d => d.Diagnostics).Count(d => d.Severity == DiagnosticSeverity.Warning),
-                errorCount = events.OfType<DiagnosticsProduced>().SelectMany(d => d.Diagnostics).Count(d => d.Severity == DiagnosticSeverity.Error)
+                errorCount = events.OfType<DiagnosticsProduced>().SelectMany(d => d.Diagnostics).Count(d => d.Severity == DiagnosticSeverity.Error),
+                newVariables = newVariables
             };
 
             var response = await _client.PostAsync(callUrl, bodyObject.ToBody());

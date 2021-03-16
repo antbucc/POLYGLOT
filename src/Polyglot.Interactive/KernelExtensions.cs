@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 
 using Microsoft.DotNet.Interactive;
 using Microsoft.DotNet.Interactive.Commands;
+using Microsoft.DotNet.Interactive.CSharp;
 using Microsoft.DotNet.Interactive.Events;
 
 namespace Polyglot.Interactive
@@ -83,8 +85,7 @@ namespace Polyglot.Interactive
             }
         }
 
-        public static T UseSubmitCodeInterceptor<T>(this T kernel)
-            where T : Kernel
+        public static CSharpKernel UseSubmitCodeInterceptor(this CSharpKernel kernel)
         {   
             kernel.AddMiddleware(async (kernelCommand, c, next) =>
             {
@@ -102,11 +103,28 @@ namespace Polyglot.Interactive
                             var subscription = c.KernelEvents.Subscribe(events.Add);
                             
                             var timer = new Stopwatch();
+                            var alreadyDefinedVariables = new HashSet<string>(kernel.GetVariableNames());
                             timer.Start();
                             await next(kernelCommand, c);
                             timer.Stop();
+                            var newVariables = new HashSet<string>(kernel.GetVariableNames());
                             subscription.Dispose();
-                            var report = await client.SubmitActions(c.Command, c.HandlingKernel, events, timer.Elapsed);
+
+                            newVariables.ExceptWith(alreadyDefinedVariables);
+                            var variableData = new Dictionary<string, string>();
+
+                            foreach (var variableName in newVariables)
+                            {
+                                if (kernel.TryGetVariable<object>(variableName, out var variableValue))
+                                {
+                                    variableData[variableName] = variableValue.GetType().Name;
+                                }
+                                else
+                                {
+                                    variableData[variableName] = "undefined";
+                                }
+                            }
+                            var report = await client.SubmitActions(c.Command, kernel, events, variableData, timer.Elapsed);
                             if (report is { })
                             {
                                 c.Display(report);
