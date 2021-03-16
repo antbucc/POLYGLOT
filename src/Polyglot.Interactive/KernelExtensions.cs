@@ -95,7 +95,7 @@ namespace Polyglot.Interactive
                         var client = GameEngineClient.Current;
 
                         // before is all done we append a final action to submit all vents for the command
-                        if ( c.HandlingKernel == kernel && client != null && !submitCode.Code.StartsWith("#!"))
+                        if (client != null && !submitCode.Code.StartsWith("#!"))
                         { 
                             // let's record all events
                             var events = new List<KernelEvent>();
