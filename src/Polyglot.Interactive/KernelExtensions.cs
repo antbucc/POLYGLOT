@@ -124,7 +124,7 @@ namespace Polyglot.Interactive
                                     variableData[variableName] = "undefined";
                                 }
                             }
-                            var report = await client.SubmitActions(c.Command, kernel, events, variableData, timer.Elapsed);
+                            var report = await client.SubmitActions(c.Command as SubmitCode, kernel, events, variableData, timer.Elapsed);
                             if (report is { })
                             {
                                 c.Display(report);

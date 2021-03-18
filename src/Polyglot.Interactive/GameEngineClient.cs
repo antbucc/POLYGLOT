@@ -11,22 +11,16 @@ using Microsoft.DotNet.Interactive.Events;
 using Microsoft.DotNet.Interactive.Formatting;
 using System.Text;
 using System.Net.Http.Headers;
-using Microsoft.CodeAnalysis;
 using Polyglot.Interactive.Contracts;
 
 namespace Polyglot.Interactive
 {
-    public record GameStateReport(string CurrentLevel, double Points, double GoldCoins, double TimeSpent, double Warning);
-
-    public delegate Task<object> MetricCalculatorAsync(KernelCommand command, Kernel kernel,
-        List<KernelEvent> events, IReadOnlyDictionary<string, string> newVariables, TimeSpan runTime, DateTime? lastRun);
-
     public class GameEngineClient
     {
         private GameStatus _gameStatus;
         private readonly HttpClient _client;
         private DateTime? _lastRun;
-        private Dictionary<string, MetricCalculatorAsync> _metrics = new ();
+        private readonly Dictionary<string, IMetricCalculator> _metrics = new ();
         public string GameId { get; }
         public string UserId { get; }
         public string Password { get; }
@@ -72,12 +66,12 @@ namespace Polyglot.Interactive
 
         private void LoadMetrics()
         {
-            _metrics["timeSpent"] = (command, kernel, events, newVariables, runTime, lastRun) => Task.FromResult<object>(runTime.TotalMilliseconds);
-            _metrics["timeSinceLastAction"] = (command, kernel, events, newVariables, runTime, lastRun) => Task.FromResult<object>(lastRun is not null ? (DateTime.Now - lastRun.Value).TotalMilliseconds : 0);
-            _metrics["success"] = (command, kernel, events, newVariables, runTime, lastRun) => Task.FromResult<object>(events.FirstOrDefault(e => e is CommandFailed) is null);
-            _metrics["warnings"] = (command, kernel, events, newVariables, runTime, lastRun) => Task.FromResult<object>(events.OfType<DiagnosticsProduced>().SelectMany(d => d.Diagnostics).Count(d => d.Severity == DiagnosticSeverity.Warning));
-            _metrics["errors"] = (command, kernel, events, newVariables, runTime, lastRun) => Task.FromResult<object>(events.OfType<DiagnosticsProduced>().SelectMany(d => d.Diagnostics).Count(d => d.Severity == DiagnosticSeverity.Error));
-            _metrics["newVariables"] = (command, kernel, events, newVariables, runTime, lastRun) => Task.FromResult<object>(newVariables);
+            _metrics["timeSpent"] = new TimeSpentMetric();
+            _metrics["timeSinceLastAction"] = new TimeSinceLastActionMetric();
+            _metrics["success"] = new SuccessMetric();
+            _metrics["warnings"] = new WarningsMetric();
+            _metrics["errors"] = new ErrorsMetric();
+            _metrics["newVariables"] = new NewVariablesMetric();
         }
 
         public static GameEngineClient Current { get; set; }
@@ -91,7 +85,7 @@ namespace Polyglot.Interactive
 
         public static string DefaultServerUrl { get; } = "https://dev.smartcommunitylab.it/gamification-v3/";
 
-        public async Task<GameStateReport> SubmitActions(KernelCommand command, Kernel kernel,
+        public async Task<GameStateReport> SubmitActions(SubmitCode command, Kernel kernel,
             List<KernelEvent> events, IReadOnlyDictionary<string, string> newVariables, TimeSpan runTime)
         {
 
@@ -113,7 +107,7 @@ namespace Polyglot.Interactive
                 if (_metrics.TryGetValue(metric, out var metricCalculator))
                 {
                     data[metric] =
-                        await metricCalculator(command, kernel, events, newVariables, runTime, _lastRun);
+                        await metricCalculator.CalculateAsync(command, kernel, events, newVariables, runTime, _lastRun);
                 }
                 else
                 {
