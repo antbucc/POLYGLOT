@@ -18,11 +18,15 @@ namespace Polyglot.Interactive
 {
     public record GameStateReport(string CurrentLevel, double Points, double GoldCoins, double TimeSpent, double Warning);
 
+    public delegate Task<object> MetricCalculatorAsync(KernelCommand command, Kernel kernel,
+        List<KernelEvent> events, IReadOnlyDictionary<string, string> newVariables, TimeSpan runTime, DateTime? lastRun);
+
     public class GameEngineClient
     {
         private GameStatus _gameStatus;
         private readonly HttpClient _client;
         private DateTime? _lastRun;
+        private Dictionary<string, MetricCalculatorAsync> _metrics = new ();
         public string GameId { get; }
         public string UserId { get; }
         public string Password { get; }
@@ -62,6 +66,18 @@ namespace Polyglot.Interactive
             PlayerId = playerId;
             ServerUrl = serverUrl;
             _client = new HttpClient();
+
+            LoadMetrics();
+        }
+
+        private void LoadMetrics()
+        {
+            _metrics["timeSpent"] = (command, kernel, events, newVariables, runTime, lastRun) => Task.FromResult<object>(runTime.TotalMilliseconds);
+            _metrics["timeSinceLastAction"] = (command, kernel, events, newVariables, runTime, lastRun) => Task.FromResult<object>(lastRun is not null ? (DateTime.Now - lastRun.Value).TotalMilliseconds : 0);
+            _metrics["success"] = (command, kernel, events, newVariables, runTime, lastRun) => Task.FromResult<object>(events.FirstOrDefault(e => e is CommandFailed) is null);
+            _metrics["warnings"] = (command, kernel, events, newVariables, runTime, lastRun) => Task.FromResult<object>(events.OfType<DiagnosticsProduced>().SelectMany(d => d.Diagnostics).Count(d => d.Severity == DiagnosticSeverity.Warning));
+            _metrics["errors"] = (command, kernel, events, newVariables, runTime, lastRun) => Task.FromResult<object>(events.OfType<DiagnosticsProduced>().SelectMany(d => d.Diagnostics).Count(d => d.Severity == DiagnosticSeverity.Error));
+            _metrics["newVariables"] = (command, kernel, events, newVariables, runTime, lastRun) => Task.FromResult<object>(newVariables);
         }
 
         public static GameEngineClient Current { get; set; }
@@ -85,19 +101,31 @@ namespace Polyglot.Interactive
             var action = "SubmitCode";
 
             callUrl = new Uri(callUrl, $"exec/game/{GameId}/action/{action}");
+
+            // find required metrics for current stage
+            var metrics = await GetMetricsAsync();
+
+            var data = new Dictionary<string, object>();
+
+            // compile data using the values calculated for the required metrics
+            foreach (var metric in metrics)
+            {
+                if (_metrics.TryGetValue(metric, out var metricCalculator))
+                {
+                    data[metric] =
+                        await metricCalculator(command, kernel, events, newVariables, runTime, _lastRun);
+                }
+                else
+                {
+                    data[metric] = "not found";
+                }
+            }
+
             var bodyObject = new
             {
                 gameId = GameId,
                 playerId = PlayerId,
-                data = new
-                {
-                    timeSpent = runTime.TotalMilliseconds,
-                    timeSinceLastAction = _lastRun is not null ? (DateTime.Now - _lastRun.Value).TotalMilliseconds : 0,
-                    success = events.FirstOrDefault(e => e is CommandFailed) is null,
-                    warnings = events.OfType<DiagnosticsProduced>().SelectMany(d => d.Diagnostics).Count(d => d.Severity == DiagnosticSeverity.Warning),
-                    errors = events.OfType<DiagnosticsProduced>().SelectMany(d => d.Diagnostics).Count(d => d.Severity == DiagnosticSeverity.Error),
-                    newVariables = newVariables
-                }
+                data = data
             };
 
             var response = await _client.PostAsync(callUrl, bodyObject.ToBody());
@@ -117,6 +145,11 @@ namespace Polyglot.Interactive
                 KernelInvocationContext.Current?.Command, formattedValues));
 
             return null;
+        }
+
+        private  Task<string[]> GetMetricsAsync()
+        {
+            return Task.FromResult(new []{ "timeSpent" , "warnings", "errors", "newVariables", "timeSinceLastAction", "success" });
         }
 
         private void EnsureAuthentication()
