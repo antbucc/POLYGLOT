@@ -72,6 +72,7 @@ namespace Polyglot.Interactive
             _metrics["warnings"] = new WarningsMetric();
             _metrics["errors"] = new ErrorsMetric();
             _metrics["newVariables"] = new NewVariablesMetric();
+            _metrics["declaredClasses"] = new DeclaredClassesMetric();
         }
 
         public static GameEngineClient Current { get; set; }
@@ -143,7 +144,7 @@ namespace Polyglot.Interactive
 
         private  Task<string[]> GetMetricsAsync()
         {
-            return Task.FromResult(new []{ "timeSpent" , "warnings", "errors", "newVariables", "timeSinceLastAction", "success" });
+            return Task.FromResult(new []{ "timeSpent" , "warnings", "errors", "newVariables", "timeSinceLastAction", "success", "declaredClasses" });
         }
 
         private void EnsureAuthentication()

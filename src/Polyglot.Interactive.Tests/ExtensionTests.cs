@@ -156,19 +156,21 @@ a"), CancellationToken.None);
 var a = 12;
 var b = 123;
 
-int DoIt(){
-    var r = 111111;
-    var rr = 111111;
-    var rrr = 111111;
-    var rrrr = 111111;
-    var rrrrr = 111111;
-    Task.Run(() => {
-        a = 12;
-    });
-    return 12;
+class MyCode {
+    public static int DoIt(){
+        var r = 111111;
+        var rr = 111111;
+        var rrr = 111111;
+        var rrrr = 111111;
+        var rrrrr = 111111;
+        Task.Run(() => {
+            a = 12;
+        });
+        return 12;
+    }
 }
 
-DoIt();"), CancellationToken.None);
+MyCode.DoIt();"), CancellationToken.None);
 
             var report = await GameEngineClient.Current.GetReportAsync();
 

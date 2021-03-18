@@ -11,11 +11,20 @@ namespace Polyglot.Interactive.Tests
         public async Task can_find_declared_classes()
         {
             var metric = new DeclaredClassesMetric();
-            var command = new SubmitCode(@"
-public class Maremma {}");
-            var values = await metric.CalculateAsync(command);
             
-            values.Should().Be(1);
+            var command = new SubmitCode(@"
+public class Schana {}
+
+public class Wana {}
+
+public class Blues {}");
+
+            var values = (await metric.CalculateAsync(command)) as string[];
+            
+            values.Should()
+                .NotBeNullOrEmpty()
+                .And
+                .BeEquivalentTo("Schana", "Wana", "Blues");
         }
     }
 }
