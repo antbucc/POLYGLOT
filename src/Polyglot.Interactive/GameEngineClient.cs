@@ -16,7 +16,7 @@ using Polyglot.Interactive.Contracts;
 
 namespace Polyglot.Interactive
 {
-    public record GameStateReport(string Status, string CurrentLevel, double Score);
+    public record GameStateReport(string CurrentLevel, double Points, double GoldCoins, double TimeSpent, double Warning);
 
     public class GameEngineClient
     {
@@ -75,8 +75,8 @@ namespace Polyglot.Interactive
 
         public static string DefaultServerUrl { get; } = "https://dev.smartcommunitylab.it/gamification-v3/";
 
-        public async Task<GameStateReport> SubmitActions(KernelCommand command, Kernel kernel, 
-            List<KernelEvent> events, IReadOnlyDictionary<string,string> newVariables, TimeSpan runTime)
+        public async Task<GameStateReport> SubmitActions(KernelCommand command, Kernel kernel,
+            List<KernelEvent> events, IReadOnlyDictionary<string, string> newVariables, TimeSpan runTime)
         {
 
             EnsureAuthentication();
@@ -89,12 +89,15 @@ namespace Polyglot.Interactive
             {
                 gameId = GameId,
                 playerId = PlayerId,
-                runTimems = runTime.TotalMilliseconds,
-                timeSinceLastActionms = _lastRun is not null ? (DateTime.Now - _lastRun.Value).TotalMilliseconds : 0,
-                success = events.FirstOrDefault(e => e is CommandFailed) is null,
-                warningCount = events.OfType<DiagnosticsProduced>().SelectMany(d => d.Diagnostics).Count(d => d.Severity == DiagnosticSeverity.Warning),
-                errorCount = events.OfType<DiagnosticsProduced>().SelectMany(d => d.Diagnostics).Count(d => d.Severity == DiagnosticSeverity.Error),
-                newVariables = newVariables
+                data = new
+                {
+                    timeSpent = runTime.TotalMilliseconds,
+                    timeSinceLastAction = _lastRun is not null ? (DateTime.Now - _lastRun.Value).TotalMilliseconds : 0,
+                    success = events.FirstOrDefault(e => e is CommandFailed) is null,
+                    warnings = events.OfType<DiagnosticsProduced>().SelectMany(d => d.Diagnostics).Count(d => d.Severity == DiagnosticSeverity.Warning),
+                    errors = events.OfType<DiagnosticsProduced>().SelectMany(d => d.Diagnostics).Count(d => d.Severity == DiagnosticSeverity.Error),
+                    newVariables = newVariables
+                }
             };
 
             var response = await _client.PostAsync(callUrl, bodyObject.ToBody());
@@ -141,8 +144,13 @@ namespace Polyglot.Interactive
 
                 _gameStatus = gameStatus;
 
-                return new GameStateReport("Succeeded", _gameStatus.CustomData.Level,
-                    _gameStatus.State.PointConcept[0].Score);
+                var scoring = gameStatus.State.PointConcept.ToDictionary(p => p.Name);
+
+                return new GameStateReport(_gameStatus.CustomData.Level,
+                    scoring["points"].Score,
+                    scoring["gold coins"].Score,
+                    scoring["timeSpent"].Score,
+                    scoring["warnings"].Score);
             }
 
             throw new InvalidCastException(

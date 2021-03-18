@@ -25,7 +25,8 @@ namespace Polyglot.Interactive
 
         public static string ToJson(this object source)
         {
-            return JsonSerializer.Serialize(source, Options);
+            var text =  JsonSerializer.Serialize(source, Options);
+            return text;
         }
 
         public static T ToObject<T>(this string jsonString)

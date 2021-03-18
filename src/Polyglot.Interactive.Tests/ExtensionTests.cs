@@ -122,7 +122,57 @@ namespace Polyglot.Interactive.Tests
 
             var report = await GameEngineClient.Current.GetReportAsync();
 
-            report.Score.Should().Be(50);
+            report.Points.Should().Be(0);
+        }
+
+        [Fact]
+        public async Task no_warnings_to_level_one()
+        {
+            var extension = new KernelExtension();
+            var kernel = CreateKernel();
+            await extension.OnLoadAsync(kernel);
+
+            await kernel.SendAsync(new SubmitCode("#!start-game --player-id playerOne --user-id papyrus --game-id 603fced708813b0001baa2cc --password papyrus0704!"), CancellationToken.None);
+
+            await kernel.SendAsync(new SubmitCode(@"
+var a = 12;
+a"), CancellationToken.None);
+
+            var report = await GameEngineClient.Current.GetReportAsync();
+
+            report.Points.Should().Be(0);
+        }
+
+        [Fact]
+        public async Task use_warnings()
+        {
+            var extension = new KernelExtension();
+            var kernel = CreateKernel();
+            await extension.OnLoadAsync(kernel);
+
+            await kernel.SendAsync(new SubmitCode("#!start-game --player-id playerOne --user-id papyrus --game-id 603fced708813b0001baa2cc --password papyrus0704!"), CancellationToken.None);
+
+            await kernel.SendAsync(new SubmitCode(@"
+var a = 12;
+var b = 123;
+
+int DoIt(){
+    var r = 111111;
+    var rr = 111111;
+    var rrr = 111111;
+    var rrrr = 111111;
+    var rrrrr = 111111;
+    Task.Run(() => {
+        a = 12;
+    });
+    return 12;
+}
+
+DoIt();"), CancellationToken.None);
+
+            var report = await GameEngineClient.Current.GetReportAsync();
+
+            report.Points.Should().Be(0);
         }
     }
 }
