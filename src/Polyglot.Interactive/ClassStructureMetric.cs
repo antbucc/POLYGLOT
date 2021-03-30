@@ -54,8 +54,8 @@ namespace Polyglot.Interactive
 
                 base.VisitClassDeclaration(node);
 
-                var _class = new ClassStructure(_name, _accessModifier, _fields.AsReadOnly(), _methods.AsReadOnly());
-                _classesStructure.Add(_class);
+                var @class = new ClassStructure(_name, _accessModifier, _fields.AsReadOnly(), _methods.AsReadOnly());
+                _classesStructure.Add(@class);
             }
 
             public override void VisitFieldDeclaration(FieldDeclarationSyntax node)

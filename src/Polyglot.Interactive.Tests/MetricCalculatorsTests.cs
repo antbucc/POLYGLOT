@@ -1,12 +1,9 @@
 ﻿using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.DotNet.Interactive.Commands;
-using Microsoft.CodeAnalysis;
 using Polyglot.Interactive.Contracts;
-using System;
 using Xunit;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Polyglot.Interactive.Tests
 {
