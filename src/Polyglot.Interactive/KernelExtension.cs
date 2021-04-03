@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.DotNet.Interactive;
+using Microsoft.DotNet.Interactive.Commands;
 using Microsoft.DotNet.Interactive.CSharp;
 using Microsoft.DotNet.Interactive.Formatting;
 
@@ -19,6 +20,7 @@ namespace Polyglot.Interactive
             {
                 case CSharpKernel cSharpKernel:
                     await InstallCsharpGameEngineAsync(cSharpKernel);
+                    //await targetKernel.SendAsync(new DisplayValue(new FormattedValue("text/markdown", @"Installed Game Engine Integration for `CSharp Kernel`.")));
                     KernelInvocationContext.Current?.Display(
                         @"Installed Game Engine Integration for `CSharp Kernel`.",
                         "text/markdown");

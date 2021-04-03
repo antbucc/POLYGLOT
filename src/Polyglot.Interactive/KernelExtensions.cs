@@ -13,7 +13,7 @@ using Microsoft.DotNet.Interactive.Events;
 
 namespace Polyglot.Interactive
 {
-    internal static class KernelExtensions
+    public static class KernelExtensions
     {
         public static T UseGameEngine<T>(this T kernel)
             where T : Kernel

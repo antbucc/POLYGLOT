@@ -176,5 +176,82 @@ MyCode.DoIt();"), CancellationToken.None);
 
             report.Points.Should().Be(0);
         }
+
+        [Fact]
+        public async Task runs_hardcoded_exercise()
+        {
+            var extension = new KernelExtension();
+            var kernel = CreateKernel();
+            await extension.OnLoadAsync(kernel);
+
+            await kernel.SendAsync(new SubmitCode("#!start-game --player-id playerOne --user-id papyrus --game-id 603fced708813b0001baa2cc --password papyrus0704!"), CancellationToken.None);
+
+            var report = await GameEngineClient.Current.GetReportAsync();
+
+            report.CurrentLevel.Should().Be("0");
+            report.Points.Should().Be(0);
+
+            await kernel.SendAsync(new SubmitCode(@"
+public class Triangle {}                
+"), CancellationToken.None);
+
+            report = await GameEngineClient.Current.GetReportAsync();
+
+            report.CurrentLevel.Should().Be("1");
+            report.Points.Should().Be(10);
+
+            await kernel.SendAsync(new SubmitCode(@"
+public class Triangle
+{
+    private float _base;
+    private float _height;
+}"), CancellationToken.None);
+
+            report = await GameEngineClient.Current.GetReportAsync();
+
+            report.CurrentLevel.Should().Be("2");
+            report.Points.Should().Be(20);
+
+            await kernel.SendAsync(new SubmitCode(@"
+public class Triangle
+{
+    private float _base;
+    private float _height;
+
+    public Triangle(float base, float height)
+    {
+        _base = base;
+        _height = height;
+    }
+}"), CancellationToken.None);
+
+            report = await GameEngineClient.Current.GetReportAsync();
+
+            report.CurrentLevel.Should().Be("3");
+            report.Points.Should().Be(30);
+
+            await kernel.SendAsync(new SubmitCode(@"
+public class Triangle
+{
+    private float _height;
+    private float _base;
+
+    public Triangle(float base, float height)
+    {
+        _base = base;
+        _height = height;
+    }
+
+    public float calculateArea() 
+    {
+        return _base*_height/2;
+    }
+}"), CancellationToken.None);
+
+            report = await GameEngineClient.Current.GetReportAsync();
+
+            report.CurrentLevel.Should().Be("4");
+            report.Points.Should().Be(40);
+        }
     }
 }

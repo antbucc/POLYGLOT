@@ -17,6 +17,8 @@ namespace Polyglot.Interactive
 {
     public class GameEngineClient
     {
+        private FakeExerciseValidator _fakeClient;
+
         private GameStatus _gameStatus;
         private readonly HttpClient _client;
         private DateTime? _lastRun;
@@ -61,6 +63,8 @@ namespace Polyglot.Interactive
             ServerUrl = serverUrl;
             _client = new HttpClient();
 
+            _fakeClient = new();
+
             LoadMetrics();
         }
 
@@ -73,6 +77,7 @@ namespace Polyglot.Interactive
             _metrics["errors"] = new ErrorsMetric();
             _metrics["newVariables"] = new NewVariablesMetric();
             _metrics["declaredClasses"] = new DeclaredClassesMetric();
+            _metrics["classesStructure"] = new ClassesStructureMetric();
         }
 
         public static GameEngineClient Current { get; set; }
@@ -123,12 +128,14 @@ namespace Polyglot.Interactive
                 data = data
             };
 
-            var response = await _client.PostAsync(callUrl, bodyObject.ToBody());
+            //var response = await _client.PostAsync(callUrl, bodyObject.ToBody());
+            var response = await _fakeClient.PostAsync(data);
 
             if (response.StatusCode == HttpStatusCode.OK)
             {
                 _lastRun = DateTime.Now;
-                return await GetReportAsync();
+                //return await GetReportAsync();
+                return await _fakeClient.GetReportAsync();
             }
 
             var formattedValues = new ImmutableArray<FormattedValue>
@@ -144,7 +151,7 @@ namespace Polyglot.Interactive
 
         private  Task<string[]> GetMetricsAsync()
         {
-            return Task.FromResult(new []{ "timeSpent" , "warnings", "errors", "newVariables", "timeSinceLastAction", "success", "declaredClasses" });
+            return Task.FromResult(new []{ "timeSpent" , "warnings", "errors", "newVariables", "timeSinceLastAction", "success", "declaredClasses", "classesStructure" });
         }
 
         private void EnsureAuthentication()
@@ -156,33 +163,34 @@ namespace Polyglot.Interactive
 
         public async Task<GameStateReport> GetReportAsync()
         {
-            var callUrlStatus = new Uri(ServerUrl);
-            callUrlStatus = new Uri(callUrlStatus, $"data/game/{GameId}/player/{PlayerId}");
+            return await _fakeClient.GetReportAsync();
+            //var callUrlStatus = new Uri(ServerUrl);
+            //callUrlStatus = new Uri(callUrlStatus, $"data/game/{GameId}/player/{PlayerId}");
 
-            var responseStatus = await _client.GetAsync(callUrlStatus);
-            if (responseStatus.StatusCode == HttpStatusCode.OK)
-            {
-                // retrieve the player status from the GET call response and print it
+            //var responseStatus = await _client.GetAsync(callUrlStatus);
+            //if (responseStatus.StatusCode == HttpStatusCode.OK)
+            //{
+            //    // retrieve the player status from the GET call response and print it
 
-                var contents = await responseStatus.Content.ReadAsStringAsync();
+            //    var contents = await responseStatus.Content.ReadAsStringAsync();
 
-                var gameStatus = contents.ToObject<GameStatus>();
+            //    var gameStatus = contents.ToObject<GameStatus>();
 
-                // report the new status to the player
+            //    // report the new status to the player
 
-                _gameStatus = gameStatus;
+            //    _gameStatus = gameStatus;
 
-                var scoring = gameStatus.State.PointConcept.ToDictionary(p => p.Name);
+            //    var scoring = gameStatus.State.PointConcept.ToDictionary(p => p.Name);
 
-                return new GameStateReport(_gameStatus.CustomData.Level,
-                    scoring["points"].Score,
-                    scoring["gold coins"].Score,
-                    scoring["timeSpent"].Score,
-                    scoring["warnings"].Score);
-            }
+            //    return new GameStateReport(_gameStatus.CustomData.Level,
+            //        scoring["points"].Score,
+            //        scoring["gold coins"].Score,
+            //        scoring["timeSpent"].Score,
+            //        scoring["warnings"].Score);
+            //}
 
-            throw new InvalidCastException(
-                $"Failed Game Engine Step, Code: {responseStatus.StatusCode}, Reason: {responseStatus.ReasonPhrase}");
+            //throw new InvalidCastException(
+            //    $"Failed Game Engine Step, Code: {responseStatus.StatusCode}, Reason: {responseStatus.ReasonPhrase}");
         }
     }
 

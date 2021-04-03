@@ -67,21 +67,23 @@ public class Triangle
         _height = h;
     }
 
-    public float Area() {
+    public float calculateArea() {
         return _base * _height / 2;
     }
 }");
 
             var floatVar = new VariableStructure("_", "float");
-            var _base = new FieldStructure(floatVar with { Name = "_base" }, "private");
-            var _height = new FieldStructure(floatVar with { Name = "_height" }, "private");
-            var Area = new MethodStructure("Area", "float", "public", new List<VariableStructure>());
+            var _base = new FieldStructure(floatVar with { Name = "_base" }, new[] { "private" });
+            var _height = new FieldStructure(floatVar with { Name = "_height" }, new[] { "private" });
+            var _constructor = new ConstructorStructure(new[] { floatVar with { Name = "b" }, floatVar with { Name = "h" } });
+            var calculateArea = new MethodStructure("calculateArea", "float", new[] { "public" }, new List<VariableStructure>());
 
             var expected = new ClassStructure(
                     "Triangle",
-                    "public",
-                    new List<FieldStructure> { _base, _height },
-                    new List<MethodStructure> { Area }
+                    new[] { "public" },
+                    new[] { _base, _height },
+                    new[] { calculateArea },
+                    new[] { _constructor }
                 );
 
             var values = (await metric.CalculateAsync(command)) as ClassStructure[];
@@ -92,7 +94,7 @@ public class Triangle
                 .HaveCount(1);
 
             values[0].Should().BeEquivalentTo(expected,
-                options => options.ComparingByMembers<ClassStructure>().ComparingByMembers<MethodStructure>());
+                options => options.ComparingByMembers<ClassStructure>().ComparingByMembers<MethodStructure>().ComparingByMembers<ConstructorStructure>());
         }
 
 
