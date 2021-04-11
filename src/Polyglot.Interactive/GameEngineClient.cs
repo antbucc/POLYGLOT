@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -77,7 +76,7 @@ namespace Polyglot.Interactive
             _metrics["errors"] = new ErrorsMetric();
             _metrics["newVariables"] = new NewVariablesMetric();
             _metrics["declaredClasses"] = new DeclaredClassesMetric();
-            _metrics["classesStructure"] = new ClassesStructureMetric();
+            _metrics["declarationsStructure"] = new DeclarationsStructureMetric();
         }
 
         public static GameEngineClient Current { get; set; }
@@ -151,7 +150,7 @@ namespace Polyglot.Interactive
 
         private  Task<string[]> GetMetricsAsync()
         {
-            return Task.FromResult(new []{ "timeSpent" , "warnings", "errors", "newVariables", "timeSinceLastAction", "success", "declaredClasses", "classesStructure" });
+            return Task.FromResult(new []{ "timeSpent" , "warnings", "errors", "newVariables", "timeSinceLastAction", "success", "declaredClasses", "declarationsStructure" });
         }
 
         private void EnsureAuthentication()

@@ -4,6 +4,7 @@ using Microsoft.DotNet.Interactive.Commands;
 using Polyglot.Interactive.Contracts;
 using Xunit;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Polyglot.Interactive.Tests
 {
@@ -53,13 +54,13 @@ public void InTheMassachusetts() {} // che e' lo spelling corretto
         [Fact]
         public async Task can_get_class_structure()
         {
-            var metric = new ClassesStructureMetric();
+            var metric = new DeclarationsStructureMetric();
 
             var command = new SubmitCode(@"
 public class Triangle
 {
-    private float _base;
     private float _height;
+    private float _base;
 
     public Triangle(float b, float h)
     {
@@ -72,48 +73,177 @@ public class Triangle
     }
 }");
 
-            var floatVar = new VariableStructure("_", "float");
-            var _base = new FieldStructure(floatVar with { Name = "_base" }, new[] { "private" });
-            var _height = new FieldStructure(floatVar with { Name = "_height" }, new[] { "private" });
-            var _constructor = new ConstructorStructure(new[] { floatVar with { Name = "b" }, floatVar with { Name = "h" } });
-            var calculateArea = new MethodStructure("calculateArea", "float", new[] { "public" }, new List<VariableStructure>());
-
+            var _base = new FieldStructure(new VariableStructure("_base", DeclarationContextKind.Type, "float"), new[] { "private" });
+            var _height = new FieldStructure(new VariableStructure("_height", DeclarationContextKind.Type, "float"), new[] { "private" });
+            var _constructor = new ConstructorStructure(
+                new[] { 
+                    new VariableStructure("b", DeclarationContextKind.Method, "float"), 
+                    new VariableStructure("h", DeclarationContextKind.Method, "float") 
+                }
+            );
+            var calculateArea = new MethodStructure(
+                "calculateArea",
+                DeclarationContextKind.Type,
+                "float", 
+                new[] { "public" },
+                new List<VariableStructure>(),
+                new MethodBodyStructure(
+                    new List<VariableStructure>()
+                )
+            );
             var expected = new ClassStructure(
                     "Triangle",
+                    DeclarationContextKind.TopLevel,
                     new[] { "public" },
                     new[] { _base, _height },
                     new[] { calculateArea },
-                    new[] { _constructor }
+                    new[] { _constructor },
+                    new List<ClassStructure>()
                 );
 
-            var values = (await metric.CalculateAsync(command)) as ClassStructure[];
+            var values = (await metric.CalculateAsync(command)) as IEnumerable<ClassStructure>;
+
+            values.Should()
+                .NotBeNullOrEmpty()
+                .And
+                .HaveCount(2);
+
+            values.Where(c => c.Name == "Triangle").FirstOrDefault().Should()
+                .NotBeNull()
+                .And
+                .BeEquivalentTo(expected, 
+                                options => options.ComparingByMembers<ClassStructure>().ComparingByMembers<MethodStructure>().ComparingByMembers<ConstructorStructure>());
+        }
+
+        [Fact]
+        public async Task can_get_toplevel_variables()
+        {
+            var metric = new DeclarationsStructureMetric();
+
+            var command = new SubmitCode(@"
+string name = ""Domenico Bini"";
+");
+
+            var expected = new FieldStructure(new VariableStructure("name", DeclarationContextKind.TopLevel, "string"), new List<string>());
+
+            var values = (await metric.CalculateAsync(command)) as IEnumerable<ClassStructure>;
 
             values.Should()
                 .NotBeNullOrEmpty()
                 .And
                 .HaveCount(1);
 
-            values[0].Should().BeEquivalentTo(expected,
-                options => options.ComparingByMembers<ClassStructure>().ComparingByMembers<MethodStructure>().ComparingByMembers<ConstructorStructure>());
+            values.Where(c => c.Kind == DeclarationContextKind.Root).FirstOrDefault().Should()
+                .NotBeNull()
+                .And
+                .Subject.As<ClassStructure>().Fields.Should()
+                .BeEquivalentTo(expected);
         }
 
-
-        public class Triangle
+        [Fact]
+        public async Task can_get_toplevel_methods_with_local_variables()
         {
-            private float _base;
-            private float _height;
+            var metric = new DeclarationsStructureMetric();
 
-            public Triangle(float b, float h)
-            {
-                _base = b;
-                _height = h;
-            }
+            var command = new SubmitCode(@"
+void printDomenicoBini()
+{
+    string name = ""Domenico Bini"";
+    System.Console.WriteLine(name);
+}
+");
 
-            public float Area(float mhanzolini)
-            {
-                return _base * _height / 2;
-            }
+            var expected = new MethodStructure(
+                "printDomenicoBini",
+                DeclarationContextKind.TopLevel,
+                "void",
+                new List<string>(),
+                new List<VariableStructure>(),
+                new MethodBodyStructure(
+                    new[]
+                    {
+                        new VariableStructure("name", DeclarationContextKind.Method, "string")
+                    }
+                )
+            );
+
+            var values = (await metric.CalculateAsync(command)) as IEnumerable<ClassStructure>;
+
+            values.Should()
+                .NotBeNullOrEmpty()
+                .And
+                .HaveCount(1);
+
+            values.Where(c => c.Kind == DeclarationContextKind.Root).FirstOrDefault().Should()
+                .NotBeNull()
+                .And
+                .Subject.As<ClassStructure>().Methods.Should()
+                .BeEquivalentTo(expected);
+        }
+
+        [Fact]
+        public async Task can_get_toplevel_variables_methods_and_classes()
+        {
+            var metric = new DeclarationsStructureMetric();
+
+            var command = new SubmitCode(@"
+class Schana {}
+
+float input = 4;
+
+float square(float x)
+{
+    return x*x;
+}
+
+square(input);
+");
+
+            var expectedField = new FieldStructure(new VariableStructure("input", DeclarationContextKind.TopLevel, "float"), new List<string>());
+
+            var expectedMethod = new MethodStructure(
+                "square",
+                DeclarationContextKind.TopLevel,
+                "float",
+                new List<string>(),
+                new[]
+                {
+                    new VariableStructure("x", DeclarationContextKind.Method, "float")
+                },
+                new MethodBodyStructure(
+                    new List<VariableStructure>()
+                )
+            );
             
+            var expectedClass = new ClassStructure(
+                    "Schana",
+                    DeclarationContextKind.TopLevel,
+                    new List<string>(),
+                    new List<FieldStructure>(),
+                    new List<MethodStructure>(),
+                    new List<ConstructorStructure>(),
+                    new List<ClassStructure>()
+                );
+
+            var values = (await metric.CalculateAsync(command)) as IEnumerable<ClassStructure>;
+
+            values.Should()
+                .NotBeNullOrEmpty()
+                .And
+                .HaveCount(2);
+
+            var root = values.Where(c => c.Kind == DeclarationContextKind.Root).FirstOrDefault();
+            root.Should()
+                .NotBeNull();
+
+            root.Fields.Should()
+                .BeEquivalentTo(expectedField);
+
+            root.Methods.Should()
+                .BeEquivalentTo(expectedMethod);
+
+            root.NestedClasses.Should()
+                .BeEquivalentTo(expectedClass);
         }
     }
 }

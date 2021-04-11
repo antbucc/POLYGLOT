@@ -218,9 +218,9 @@ public class Triangle
     private float _base;
     private float _height;
 
-    public Triangle(float base, float height)
+    public Triangle(float @base, float height)
     {
-        _base = base;
+        _base = @base;
         _height = height;
     }
 }"), CancellationToken.None);
@@ -233,12 +233,12 @@ public class Triangle
             await kernel.SendAsync(new SubmitCode(@"
 public class Triangle
 {
-    private float _height;
     private float _base;
+    private float _height;
 
-    public Triangle(float base, float height)
+    public Triangle(float @base, float height)
     {
-        _base = base;
+        _base = @base;
         _height = height;
     }
 
