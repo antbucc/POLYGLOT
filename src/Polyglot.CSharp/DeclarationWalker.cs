@@ -1,10 +1,9 @@
-﻿using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Polyglot.Interactive.Contracts;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Polyglot.Interactive
+namespace Polyglot.CSharp
 {
     public enum DeclarationContextKind { Root, TopLevel, Type, Method };
 

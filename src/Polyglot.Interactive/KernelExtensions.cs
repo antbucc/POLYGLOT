@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.Diagnostics;
-using System.Linq;
 using System.Threading.Tasks;
 
 using Microsoft.DotNet.Interactive;
 using Microsoft.DotNet.Interactive.Commands;
 using Microsoft.DotNet.Interactive.CSharp;
 using Microsoft.DotNet.Interactive.Events;
+using Polyglot.Core;
+using Polyglot.CSharp;
 
 namespace Polyglot.Interactive
 {
@@ -68,6 +69,16 @@ namespace Polyglot.Interactive
 
                            GameEngineClient.Configure(gameId, userId, password, playerId, serverUrl);
 
+                           GameEngineClient.Current.AddMetric("timeSpent", new TimeSpentMetric());
+                           GameEngineClient.Current.AddMetric("timeSinceLastAction", new TimeSinceLastActionMetric());
+                           GameEngineClient.Current.AddMetric("success", new SuccessMetric());
+                           GameEngineClient.Current.AddMetric("warnings", new WarningsMetric());
+                           GameEngineClient.Current.AddMetric("errors", new ErrorsMetric());
+                           GameEngineClient.Current.AddMetric("newVariables", new NewVariablesMetric());
+                           GameEngineClient.Current.AddMetric("declaredClasses", new DeclaredClassesMetric());
+                           GameEngineClient.Current.AddMetric("declarationsStructure", new DeclarationsStructureMetric());
+
+                          
                            context?.Display(
                                @"Game Engine configuration is now complete.",
                                "text/markdown");
@@ -83,68 +94,6 @@ namespace Polyglot.Interactive
                 command.AddOption(serverUrlOption);
                 return command;
             }
-        }
-
-        public static CSharpKernel UseSubmitCodeInterceptor(this CSharpKernel kernel)
-        {   
-            kernel.AddMiddleware(async (kernelCommand, c, next) =>
-            {
-                // intercept code submission
-                switch (kernelCommand)
-                {
-                    case SubmitCode submitCode:
-                        var client = GameEngineClient.Current;
-
-                        // before is all done we append a final action to submit all vents for the command
-                        if (client != null && !submitCode.Code.StartsWith("#!"))
-                        { 
-                            // let's record all events
-                            var events = new List<KernelEvent>();
-                            var subscription = c.KernelEvents.Subscribe(events.Add);
-                            
-                            var timer = new Stopwatch();
-                            var alreadyDefinedVariables = new HashSet<string>(kernel.GetVariableNames());
-                            timer.Start();
-                            await next(kernelCommand, c);
-                            timer.Stop();
-                            var newVariables = new HashSet<string>(kernel.GetVariableNames());
-                            subscription.Dispose();
-
-                            newVariables.ExceptWith(alreadyDefinedVariables);
-                            var variableData = new Dictionary<string, string>();
-
-                            foreach (var variableName in newVariables)
-                            {
-                                if (kernel.TryGetVariable<object>(variableName, out var variableValue))
-                                {
-                                    variableData[variableName] = variableValue.GetType().Name;
-                                }
-                                else
-                                {
-                                    variableData[variableName] = "undefined";
-                                }
-                            }
-                            var report = await client.SubmitActions(c.Command as SubmitCode, kernel, events, variableData, timer.Elapsed);
-                            if (report is { })
-                            {
-                                c.Display(report);
-                            }
-                        }
-                        else
-                        {
-                            await next(kernelCommand, c);
-                        }
-
-                        break;
-                    default:
-                        await next(kernelCommand, c);
-                        break;
-                }
-
-
-            });
-
-            return kernel;
         }
     }
 }

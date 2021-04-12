@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
-namespace Polyglot.Interactive.Contracts
+namespace Polyglot.CSharp
 {
     public record ClassStructure(string Name, DeclarationContextKind Kind, IEnumerable<string> Modifiers, IEnumerable<FieldStructure> Fields, IEnumerable<MethodStructure> Methods, IEnumerable<ConstructorStructure> Constructors, IEnumerable<ClassStructure> NestedClasses)
     {

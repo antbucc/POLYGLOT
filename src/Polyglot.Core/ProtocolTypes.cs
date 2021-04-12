@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace Polyglot.Interactive.Contracts
+namespace Polyglot.Core
 {
     public record PointConcept(string Id, string Name, double Score);
 

@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.DotNet.Interactive.Commands;
 using Microsoft.DotNet.Interactive.Events;
+using Polyglot.Core;
 using Polyglot.Interactive.Tests.Utilities;
 using Xunit;
 using Xunit.Abstractions;
@@ -15,6 +16,7 @@ namespace Polyglot.Interactive.Tests
     {
         public ExtensionTests(ITestOutputHelper output) : base(output)
         {
+            DisposeAfterTest(Engine.Reset);
         }
 
         [Fact]

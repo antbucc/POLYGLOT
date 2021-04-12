@@ -1,10 +1,10 @@
 ﻿using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.DotNet.Interactive.Commands;
-using Polyglot.Interactive.Contracts;
 using Xunit;
 using System.Collections.Generic;
 using System.Linq;
+using Polyglot.CSharp;
 
 namespace Polyglot.Interactive.Tests
 {

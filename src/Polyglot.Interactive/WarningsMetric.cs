@@ -6,6 +6,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.Interactive;
 using Microsoft.DotNet.Interactive.Commands;
 using Microsoft.DotNet.Interactive.Events;
+using Polyglot.Core;
 
 namespace Polyglot.Interactive
 {

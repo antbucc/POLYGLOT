@@ -5,7 +5,7 @@ using Microsoft.DotNet.Interactive;
 using Microsoft.DotNet.Interactive.Commands;
 using Microsoft.DotNet.Interactive.Events;
 
-namespace Polyglot.Interactive
+namespace Polyglot.Core
 {
     public interface IMetricCalculator
     {

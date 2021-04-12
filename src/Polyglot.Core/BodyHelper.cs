@@ -4,7 +4,7 @@ using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Polyglot.Interactive
+namespace Polyglot.Core
 {
     internal static class BodyHelper
     {

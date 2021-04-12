@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
@@ -11,16 +11,6 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.DotNet.Interactive" Version="1.0.0-beta.21181.2" />
-    <PackageReference Include="Microsoft.DotNet.Interactive.CSharp" Version="1.0.0-beta.21181.2" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="$(OutputPath)/Polyglot.Interactive.dll" Pack="true" PackagePath="interactive-extensions/dotnet" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\Polyglot.Core\Polyglot.Core.csproj" />
-    <ProjectReference Include="..\Polyglot.CSharp\Polyglot.CSharp.csproj" />
   </ItemGroup>
 
 </Project>

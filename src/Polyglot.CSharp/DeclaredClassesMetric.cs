@@ -8,8 +8,9 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.DotNet.Interactive;
 using Microsoft.DotNet.Interactive.Commands;
 using Microsoft.DotNet.Interactive.Events;
+using Polyglot.Core;
 
-namespace Polyglot.Interactive
+namespace Polyglot.CSharp
 {
     public class DeclaredClassesMetric :  IMetricCalculator
     {
