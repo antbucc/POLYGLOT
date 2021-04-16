@@ -1,4 +1,8 @@
-﻿using System.Linq;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -11,6 +15,28 @@ using Xunit.Abstractions;
 
 namespace Polyglot.Interactive.Tests
 {
+    public class FakeResponseHandler : DelegatingHandler
+    {
+        private readonly Dictionary<Uri, HttpResponseMessage> _fakeResponses = new();
+
+        public void AddFakeResponse(Uri uri, HttpResponseMessage responseMessage)
+        {
+            _fakeResponses.Add(uri, responseMessage);
+        }
+
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            if (_fakeResponses.ContainsKey(request.RequestUri))
+            {
+                return Task.FromResult(_fakeResponses[request.RequestUri]);
+            }
+            else
+            {
+                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.NotFound) { RequestMessage = request });
+            }
+        }
+    }
+
     [Collection("no parallel")]
     public class ExtensionTests : LanguageKernelTestBase
     {
@@ -61,8 +87,7 @@ namespace Polyglot.Interactive.Tests
 
         [Fact]
         public async Task adds_middleware_to_intercept_code_submissions()
-        {
-            var extension = new KernelExtension();
+        { var extension = new KernelExtension();
             var kernel = CreateKernel();
             await extension.OnLoadAsync(kernel);
             
@@ -111,12 +136,19 @@ namespace Polyglot.Interactive.Tests
                 .NotContain(d => d.Value is GameStateReport);
         }
 
+
+
         [Fact]
         public async Task intercepts_errors()
         {
+            var handler = new FakeResponseHandler();
+
+            handler.AddFakeResponse(new Uri("http://iopesione"), new HttpResponseMessage(HttpStatusCode.NotFound));
+            var client = new HttpClient(handler);
+
             var extension = new KernelExtension();
             var kernel = CreateKernel();
-            await extension.OnLoadAsync(kernel);
+            await extension.OnLoadAsync(kernel, () => client);
 
             await kernel.SendAsync(new SubmitCode("#!start-game --player-id playerOne --user-id papyrus --game-id 603fced708813b0001baa2cc --password papyrus0704!"), CancellationToken.None);
 

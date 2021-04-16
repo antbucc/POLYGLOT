@@ -1,14 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.Invocation;
-using System.Diagnostics;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 using Microsoft.DotNet.Interactive;
-using Microsoft.DotNet.Interactive.Commands;
-using Microsoft.DotNet.Interactive.CSharp;
-using Microsoft.DotNet.Interactive.Events;
 using Polyglot.Core;
 using Polyglot.CSharp;
 
@@ -16,10 +12,10 @@ namespace Polyglot.Interactive
 {
     public static class KernelExtensions
     {
-        public static T UseGameEngine<T>(this T kernel)
+        public static T UseGameEngine<T>(this T kernel, Func<HttpClient> clientFactory = null)
             where T : Kernel
         {
-            kernel.AddDirective(SetupEngine());
+            kernel.AddDirective(SetupEngine(clientFactory));
 
             kernel.AddDirective(GetCurrentState());
 
@@ -40,7 +36,7 @@ namespace Polyglot.Interactive
                 return command;
             }
 
-            static Command SetupEngine()
+            static Command SetupEngine(Func<HttpClient> factory)
             {
                 var gameIdOption = new Option<string>(
                     "--game-id",
@@ -67,7 +63,7 @@ namespace Polyglot.Interactive
                     Handler = CommandHandler.Create<string, string,string, string, string, KernelInvocationContext>((gameId, userId, password, playerId, serverUrl, context) =>
                        {
 
-                           GameEngineClient.Configure(gameId, userId, password, playerId, serverUrl);
+                           GameEngineClient.Configure(gameId, userId, password, playerId, serverUrl, factory);
 
                            GameEngineClient.Current.AddMetric("timeSpent", new TimeSpentMetric());
                            GameEngineClient.Current.AddMetric("timeSinceLastAction", new TimeSinceLastActionMetric());

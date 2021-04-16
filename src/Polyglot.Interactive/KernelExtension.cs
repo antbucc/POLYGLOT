@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Net.Http;
+using System.Threading.Tasks;
 using Microsoft.DotNet.Interactive;
 using Microsoft.DotNet.Interactive.Formatting;
 using Polyglot.Core;
@@ -8,16 +10,20 @@ namespace Polyglot.Interactive
 {
     public class KernelExtension : IKernelExtension
     {
-        public async Task OnLoadAsync(Kernel kernel)
+        public Task OnLoadAsync(Kernel kernel)
         {
-            await kernel.VisitSubkernelsAndSelfAsync(InstallGameEngineAsync);
-            await Engine.Instance.InstallLanguageEngineAsync(new CsharpEngine());
-
+            return OnLoadAsync(kernel, () => new HttpClient());
         }
 
-        private Task InstallGameEngineAsync(Kernel targetKernel)
+        public async Task OnLoadAsync(Kernel kernel, Func<HttpClient> httpClientFactory)
         {
-            targetKernel.UseGameEngine();
+            await kernel.VisitSubkernelsAndSelfAsync(k => InstallGameEngineAsync(k, httpClientFactory));
+            await Engine.Instance.InstallLanguageEngineAsync(new CsharpEngine());
+        }
+
+        private Task InstallGameEngineAsync(Kernel targetKernel, Func<HttpClient> httpClientFactory)
+        {
+            targetKernel.UseGameEngine(httpClientFactory);
             Engine.Instance.RegisterKernel(targetKernel);
             Formatter.SetPreferredMimeTypeFor(typeof(GameStateReport), HtmlFormatter.MimeType);
             return Task.CompletedTask;

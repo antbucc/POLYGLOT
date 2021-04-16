@@ -26,7 +26,8 @@ namespace Polyglot.Core
         public string PlayerId { get; }
         public string ServerUrl { get; }
 
-        private GameEngineClient(string gameId, string userId, string password, string playerId, string serverUrl)
+        private GameEngineClient(string gameId, string userId, string password, string playerId, string serverUrl,
+            HttpClient httpClient)
         {
             if (string.IsNullOrWhiteSpace(gameId))
             {
@@ -58,7 +59,7 @@ namespace Polyglot.Core
             Password = password;
             PlayerId = playerId;
             ServerUrl = serverUrl;
-            _client = new HttpClient();
+            _client = httpClient;
             
         }
 
@@ -69,10 +70,11 @@ namespace Polyglot.Core
 
         public static GameEngineClient Current { get; set; }
 
-        public static void Configure(string gameId, string userId, string password, string playerId, string serverUrl = null)
+        public static void Configure(string gameId, string userId, string password, string playerId,
+            string serverUrl = null, Func<HttpClient> clientFactory = null)
         {
             Current = new GameEngineClient(gameId, userId, password, playerId,
-                string.IsNullOrWhiteSpace(serverUrl) ? DefaultServerUrl : serverUrl);
+                string.IsNullOrWhiteSpace(serverUrl) ? DefaultServerUrl : serverUrl, clientFactory?.Invoke() ?? new HttpClient());
         }
 
         public static string DefaultServerUrl { get; } = "https://dev.smartcommunitylab.it/gamification-v3/";
