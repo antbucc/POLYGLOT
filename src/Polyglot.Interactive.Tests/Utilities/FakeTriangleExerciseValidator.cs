@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using System.Threading.Tasks;
 using Polyglot.Core;
 using Polyglot.CSharp;
 
-namespace Polyglot.Interactive
+namespace Polyglot.Interactive.Tests
 {
-    class FakeExerciseValidator
+
+    public class FakeTriangleExerciseValidator
     {
         private int _currentLevel = 0;
 
@@ -29,37 +29,42 @@ namespace Polyglot.Interactive
             { 3, new ClassStructure("Triangle", DeclarationContextKind.TopLevel, new[] { "public" }, new[] { _base, _height }, new[] { _calculateArea }, new[] { _constructor }, Array.Empty<ClassStructure>()) },  
         };
 
-        public Task<HttpResponseMessage> PostAsync(Dictionary<string, object> data)
+        public HttpResponseMessage CheckSubmission(string requestContent)
         {
-            CheckSubmission(data["declarationsStructure"] as IEnumerable<ClassStructure>);
-            
-            return Task.FromResult(new HttpResponseMessage(System.Net.HttpStatusCode.OK));
-        }
+            var response = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
 
-        private bool CheckSubmission(IEnumerable<ClassStructure> data)
-        {
-            var exerciseData = data?.Where(c => c.Name == "Triangle").FirstOrDefault();
+            var metrics = requestContent.ToObject<HttpContentBody>();
+            var declarationsMetricObj = metrics?.data["declarationsStructure"];
+            var declarationsMetric = declarationsMetricObj?.ToString().ToObject<IEnumerable<ClassStructure>>();
 
-            if (_currentLevel == 4) return false;
-            if (exerciseData is null) return false;
+            var exerciseData = declarationsMetric?.Where(c => c.Name == "Triangle").FirstOrDefault();
+
+            if (_currentLevel == 4) return response;
+            if (exerciseData is null) return response;
 
             var expected = _expectedResults[_currentLevel];
 
             if (expected.Equals(exerciseData))
             {
                 _currentLevel++;
-                return true;
+                return response;
             }
-            return false;
+            return response;
         }
 
-        public Task<GameStateReport> GetReportAsync()
+        public new HttpResponseMessage GetReport(string requestContent)
         {
-            return Task.FromResult(new GameStateReport(
-                    _currentLevel.ToString(),
-                    _currentLevel * 10,
-                    _currentLevel
-                ));
+            var response = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
+            var report = new GameStatus(
+                "dummyPlayerId",
+                "dummyGameId",
+                new GameState(new[] { new PointConcept("0", "points", _currentLevel * 10), new PointConcept("1", "gold coins", _currentLevel) }),
+                new CustomData(_currentLevel.ToString())
+            );
+
+            response.Content = report.ToBody();
+
+            return response;
         }
     }
 }

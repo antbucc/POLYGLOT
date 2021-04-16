@@ -6,7 +6,7 @@ using System.Text.Json.Serialization;
 
 namespace Polyglot.Core
 {
-    internal static class BodyHelper
+    public static class BodyHelper
     {
         private static JsonSerializerOptions Options { get; } =
             new(JsonSerializerDefaults.General)
