@@ -34,37 +34,54 @@ namespace Polyglot.Interactive.Tests
             var response = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
 
             var metrics = requestContent.ToObject<HttpContentBody>();
-            var declarationsMetricObj = metrics?.data["declarationsStructure"];
+            var declarationsMetricObj = metrics?.data["topLevelClassesStructureMetric"];
             var declarationsMetric = declarationsMetricObj?.ToString().ToObject<IEnumerable<ClassStructure>>();
 
             var exerciseData = declarationsMetric?.Where(c => c.Name == "Triangle").FirstOrDefault();
 
-            if (_currentLevel == 4) return response;
-            if (exerciseData is null) return response;
-
-            var expected = _expectedResults[_currentLevel];
-
-            if (expected.Equals(exerciseData))
+            if (exerciseData is null)
             {
-                _currentLevel++;
+                response.StatusCode = System.Net.HttpStatusCode.BadRequest;
                 return response;
             }
+
+            ClassStructure expected;
+            var levelExists = _expectedResults.TryGetValue(_currentLevel, out expected);
+
+            if (levelExists && expected.Equals(exerciseData))
+            {
+                _currentLevel++;
+            }
+            response.Content = getStatus().ToBody();
             return response;
         }
 
-        public new HttpResponseMessage GetReport(string requestContent)
+        public HttpResponseMessage GetReport(string requestContent)
         {
             var response = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
-            var report = new GameStatus(
+
+            response.Content = getStatus().ToBody();
+
+            return response;
+        }
+
+        internal HttpResponseMessage AuthToken(string arg)
+        {
+            var response = new HttpResponseMessage(System.Net.HttpStatusCode.OK);
+            var dummyAuth = new AuthenticationResponse("dummyToken", "bearer", "dummyRefresh", 9999, "dummyScope", "dummyJTI");
+
+            response.Content = dummyAuth.ToBody();
+            return response;
+        }
+
+        private GameStatus getStatus()
+        {
+            return new GameStatus(
                 "dummyPlayerId",
                 "dummyGameId",
                 new GameState(new[] { new PointConcept("0", "points", _currentLevel * 10), new PointConcept("1", "gold coins", _currentLevel) }),
-                new CustomData(_currentLevel.ToString())
+                new CustomData(_currentLevel.ToString(), "")
             );
-
-            response.Content = report.ToBody();
-
-            return response;
         }
     }
 }

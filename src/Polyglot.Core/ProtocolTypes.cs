@@ -12,5 +12,7 @@ namespace Polyglot.Core
 
     public record GameStatus(string PlayerId, string GameId, GameState State, CustomData CustomData);
 
-    public record CustomData(string Level);
+    public record CustomData(string Level, string Feedback);
+
+    public record AuthenticationResponse(string access_token, string token_type, string refresh_token, int expires_in, string scope, string jti);
 }

@@ -186,17 +186,18 @@ MyCode.DoIt();"), CancellationToken.None);
         }
 
         [Fact]
-        public async Task runs_hardcoded_exercise()
+        public async Task runs_hardcoded_exercise_with_fake()
         {
-            var baseUri = new Uri("https://dev.smartcommunitylab.it/gamification-v3/");
+            var gamificationEngineUri = new Uri("https://dev.smartcommunitylab.it/gamification-v3/");
+            var consoleUri = new Uri("http://139.177.202.145:9090/");
             var gameId = "603fced708813b0001baa2cc";
             var playerId = "playerOne";
-            var action = "SubmitCode";
 
             var handler = new FakeResponseHandler();
             var fakeValidator = new FakeTriangleExerciseValidator();
-            handler.AddFakeResponse(new Uri(baseUri, $"exec/game/{gameId}/action/{action}"), fakeValidator.CheckSubmission);
-            handler.AddFakeResponse(new Uri(baseUri, $"data/game/{gameId}/player/{playerId}"), fakeValidator.GetReport);
+            handler.AddFakeResponse(new Uri(consoleUri, "api/submit-code"), fakeValidator.CheckSubmission);
+            handler.AddFakeResponse(new Uri(consoleUri, "oauth/token"), fakeValidator.AuthToken);
+            handler.AddFakeResponse(new Uri(gamificationEngineUri, $"data/game/{gameId}/player/{playerId}"), fakeValidator.GetReport);
             var client = new HttpClient(handler);
 
             var extension = new KernelExtension();
@@ -271,6 +272,87 @@ public class Triangle
 
             report.CurrentLevel.Should().Be("4");
             report.Points.Should().Be(40);
+        }
+
+        [Fact]
+        public async Task runs_hardcoded_exercise_with_remote_api()
+        {
+            var extension = new KernelExtension();
+            var kernel = CreateKernel();
+            await extension.OnLoadAsync(kernel);
+
+            await kernel.SendAsync(new SubmitCode("#!start-game --player-id player17 --user-id papyrus --game-id 603fced708813b0001baa2cc --password papyrus0704!"), CancellationToken.None);
+
+            var report = await GameEngineClient.Current.GetReportAsync();
+
+            report.CurrentLevel.Should().Be("0");
+            report.Points.Should().Be(0);
+
+            await kernel.SendAsync(new SubmitCode(@"
+public class Triangle {}                
+"), CancellationToken.None);
+
+            report = await GameEngineClient.Current.GetReportAsync();
+
+            report.CurrentLevel.Should().Be("1");
+            report.Points.Should().Be(10);
+            report.GoldCoins.Should().Be(2);
+
+            await kernel.SendAsync(new SubmitCode(@"
+public class Triangle
+{
+    private float _base;
+    private float _height;
+}"), CancellationToken.None);
+
+            report = await GameEngineClient.Current.GetReportAsync();
+
+            report.CurrentLevel.Should().Be("2");
+            report.Points.Should().Be(20);
+            report.GoldCoins.Should().Be(4);
+
+            await kernel.SendAsync(new SubmitCode(@"
+public class Triangle
+{
+    private float _base;
+    private float _height;
+
+    public Triangle(float @base, float height)
+    {
+        _base = @base;
+        _height = height;
+    }
+}"), CancellationToken.None);
+
+            report = await GameEngineClient.Current.GetReportAsync();
+
+            report.CurrentLevel.Should().Be("3");
+            report.Points.Should().Be(25);
+            report.GoldCoins.Should().Be(6);
+
+            await kernel.SendAsync(new SubmitCode(@"
+public class Triangle
+{
+    private float _base;
+    private float _height;
+
+    public Triangle(float @base, float height)
+    {
+        _base = @base;
+        _height = height;
+    }
+
+    public float calculateArea() 
+    {
+        return _base*_height/2;
+    }
+}"), CancellationToken.None);
+
+            report = await GameEngineClient.Current.GetReportAsync();
+
+            report.CurrentLevel.Should().Be("4");
+            report.Points.Should().Be(30);
+            report.GoldCoins.Should().Be(8);
         }
     }
 }

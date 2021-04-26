@@ -54,7 +54,7 @@ public void InTheMassachusetts() {} // che e' lo spelling corretto
         [Fact]
         public async Task can_get_class_structure()
         {
-            var metric = new DeclarationsStructureMetric();
+            var metric = new TopLevelClassesStructureMetric();
 
             var command = new SubmitCode(@"
 public class Triangle
@@ -106,7 +106,7 @@ public class Triangle
             values.Should()
                 .NotBeNullOrEmpty()
                 .And
-                .HaveCount(2);
+                .HaveCount(1);
 
             values.Where(c => c.Name == "Triangle").FirstOrDefault().Should()
                 .NotBeNull()
@@ -126,14 +126,9 @@ string name = ""Domenico Bini"";
 
             var expected = new FieldStructure(new VariableStructure("name", DeclarationContextKind.TopLevel, "string"), new List<string>());
 
-            var values = (await metric.CalculateAsync(command)) as IEnumerable<ClassStructure>;
+            var value = (await metric.CalculateAsync(command)) as ClassStructure;
 
-            values.Should()
-                .NotBeNullOrEmpty()
-                .And
-                .HaveCount(1);
-
-            values.Where(c => c.Kind == DeclarationContextKind.Root).FirstOrDefault().Should()
+            value.Should()
                 .NotBeNull()
                 .And
                 .Subject.As<ClassStructure>().Fields.Should()
@@ -167,14 +162,9 @@ void printDomenicoBini()
                 )
             );
 
-            var values = (await metric.CalculateAsync(command)) as IEnumerable<ClassStructure>;
+            var value = (await metric.CalculateAsync(command)) as ClassStructure;
 
-            values.Should()
-                .NotBeNullOrEmpty()
-                .And
-                .HaveCount(1);
-
-            values.Where(c => c.Kind == DeclarationContextKind.Root).FirstOrDefault().Should()
+            value.Should()
                 .NotBeNull()
                 .And
                 .Subject.As<ClassStructure>().Methods.Should()
@@ -225,14 +215,8 @@ square(input);
                     new List<ClassStructure>()
                 );
 
-            var values = (await metric.CalculateAsync(command)) as IEnumerable<ClassStructure>;
+            var root = (await metric.CalculateAsync(command)) as ClassStructure;
 
-            values.Should()
-                .NotBeNullOrEmpty()
-                .And
-                .HaveCount(2);
-
-            var root = values.Where(c => c.Kind == DeclarationContextKind.Root).FirstOrDefault();
             root.Should()
                 .NotBeNull();
 

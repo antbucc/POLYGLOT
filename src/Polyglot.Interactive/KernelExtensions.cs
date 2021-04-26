@@ -73,8 +73,9 @@ namespace Polyglot.Interactive
                            GameEngineClient.Current.AddMetric("newVariables", new NewVariablesMetric());
                            GameEngineClient.Current.AddMetric("declaredClasses", new DeclaredClassesMetric());
                            GameEngineClient.Current.AddMetric("declarationsStructure", new DeclarationsStructureMetric());
+                           GameEngineClient.Current.AddMetric("topLevelClassesStructureMetric", new TopLevelClassesStructureMetric());
 
-                          
+
                            context?.Display(
                                @"Game Engine configuration is now complete.",
                                "text/markdown");

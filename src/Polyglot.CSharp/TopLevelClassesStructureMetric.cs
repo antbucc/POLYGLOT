@@ -10,12 +10,12 @@ using Polyglot.Core;
 
 namespace Polyglot.CSharp
 {
-    public class DeclarationsStructureMetric : IMetricCalculator
+    public class TopLevelClassesStructureMetric : IMetricCalculator
     {
         private readonly CSharpParseOptions _parserOptions;
-        public string Name => "declarationsStructure";
+        public string Name => "topLevelClassesStructureMetric";
 
-        public DeclarationsStructureMetric()
+        public TopLevelClassesStructureMetric()
         {
             _parserOptions = CSharpParseOptions.Default.WithKind(SourceCodeKind.Script);
         }
@@ -32,10 +32,8 @@ namespace Polyglot.CSharp
 
             var root = declarationWalker.DeclarationsRoot;
 
-            //var result = new List<ClassStructure>(root.NestedClasses);
-            //result.Add(root);
+            var result = new List<ClassStructure>(root.NestedClasses);
 
-            var result = root;
             return Task.FromResult<object>(result);
         }
     }

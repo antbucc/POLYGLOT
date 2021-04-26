@@ -40,6 +40,7 @@ namespace Polyglot.CSharp
         }
     }
 
+    // TODO: add modifiers to constructor
     public record ConstructorStructure(IEnumerable<VariableStructure> Parameters)
     {
         public DeclarationContextKind Kind => DeclarationContextKind.Type;
