@@ -207,6 +207,7 @@ namespace Polyglot.Core
             _gameStatus = gameStatus;
 
             var scoring = gameStatus.State.PointConcept.ToDictionary(p => p.Name);
+            _currentLevel = gameStatus.CustomData.Level;
 
             return new GameStateReport(_gameStatus.CustomData.Level,
                 scoring["points"].Score,
