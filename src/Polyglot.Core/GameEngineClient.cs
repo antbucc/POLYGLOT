@@ -165,7 +165,7 @@ namespace Polyglot.Core
             encodedContent.Headers.Add("Content-Type", "application/x-www-form-urlencoded");
             var response = await _client.PostAsync(callUrl, encodedContent);
 
-            if (response.StatusCode != HttpStatusCode.OK)
+            if (response.StatusCode == HttpStatusCode.OK)
             {
                 var responseContent = await response.Content.ReadAsStringAsync();
                 var auth = responseContent.ToObject<AuthenticationResponse>();
