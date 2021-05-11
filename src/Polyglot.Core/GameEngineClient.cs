@@ -158,7 +158,7 @@ namespace Polyglot.Core
             //JwtSecurityTokenHandler;
 
             // login authentication token
-            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", "mettere il token qui");
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", "NjRiMDRkZDgtY2Y0Zi00MzU2LTk1OGItNzY1ZTNkOGY0MzM4OnBvbHlnbG90");
 
             using var encodedContent = new FormUrlEncodedContent(authenticationContent);
             encodedContent.Headers.Clear();
@@ -204,15 +204,15 @@ namespace Polyglot.Core
             var gameStatus = contents.ToObject<GameStatus>();
 
             // report the new status to the player
-            _gameStatus = gameStatus;
+            _gameStatus = gameStatus with { CustomData = gameStatus.CustomData with { Level = gameStatus.CustomData.Level ?? "0" } };
+            _currentLevel = _gameStatus.CustomData.Level;
 
             var scoring = gameStatus.State.PointConcept.ToDictionary(p => p.Name);
-            _currentLevel = gameStatus.CustomData.Level;
 
-            return new GameStateReport(_gameStatus.CustomData.Level,
+            return new GameStateReport(_currentLevel,
                 scoring["points"].Score,
                 scoring["gold coins"].Score,
-                _gameStatus.CustomData.Feedback ?? "0");
+                _gameStatus.CustomData.Feedback ?? "");
         }
 
         public static void Reset()
