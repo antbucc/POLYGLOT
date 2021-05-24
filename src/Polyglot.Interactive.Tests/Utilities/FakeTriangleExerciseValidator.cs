@@ -14,19 +14,19 @@ namespace Polyglot.Interactive.Tests
 
         private static FieldStructure _base = new FieldStructure(new VariableStructure("_base", DeclarationContextKind.Type, "float"), new[] { "private" });
         private static FieldStructure _height = new FieldStructure(new VariableStructure("_height", DeclarationContextKind.Type, "float"), new[] { "private" });
-        private static ConstructorStructure _constructor = new(new[] { new VariableStructure("base", DeclarationContextKind.Method, "float"), new VariableStructure("height", DeclarationContextKind.Method, "float") });
+        private static ConstructorStructure _constructor = new(new[] { "public" }, new[] { new VariableStructure("base", DeclarationContextKind.Method, "float"), new VariableStructure("height", DeclarationContextKind.Method, "float") });
         private static MethodStructure _calculateArea = new MethodStructure("calculateArea", DeclarationContextKind.Type, "float", new[] { "public" }, Array.Empty<VariableStructure>(), new MethodBodyStructure(Array.Empty<VariableStructure>()));
 
         private Dictionary<int, ClassStructure> _expectedResults = new()
         {
             // step 1: class declaration
-            { 0, new ClassStructure("Triangle", DeclarationContextKind.TopLevel, new[] { "public" }, Array.Empty<FieldStructure>(), Array.Empty<MethodStructure>(), Array.Empty<ConstructorStructure>(), Array.Empty<ClassStructure>()) },     
+            { 0, new ClassStructure("Triangle", DeclarationContextKind.TopLevel, new[] { "public" }, Array.Empty<FieldStructure>(), Array.Empty<PropertyStructure>(), Array.Empty<MethodStructure>(), Array.Empty<ConstructorStructure>(), Array.Empty<ClassStructure>()) },     
             // step 2: field declaration
-            { 1, new ClassStructure("Triangle", DeclarationContextKind.TopLevel, new[] { "public" }, new[] { _base, _height }, Array.Empty<MethodStructure>(), Array.Empty<ConstructorStructure>(), Array.Empty<ClassStructure>()) },          
+            { 1, new ClassStructure("Triangle", DeclarationContextKind.TopLevel, new[] { "public" }, new[] { _base, _height }, Array.Empty<PropertyStructure>(), Array.Empty<MethodStructure>(), Array.Empty<ConstructorStructure>(), Array.Empty<ClassStructure>()) },          
             // step 3: constructor
-            { 2, new ClassStructure("Triangle", DeclarationContextKind.TopLevel, new[] { "public" }, new[] { _base, _height }, Array.Empty<MethodStructure>(), new[] { _constructor }, Array.Empty<ClassStructure>()) },          
+            { 2, new ClassStructure("Triangle", DeclarationContextKind.TopLevel, new[] { "public" }, new[] { _base, _height }, Array.Empty<PropertyStructure>(), Array.Empty<MethodStructure>(), new[] { _constructor }, Array.Empty<ClassStructure>()) },          
             // step 4: Area method
-            { 3, new ClassStructure("Triangle", DeclarationContextKind.TopLevel, new[] { "public" }, new[] { _base, _height }, new[] { _calculateArea }, new[] { _constructor }, Array.Empty<ClassStructure>()) },  
+            { 3, new ClassStructure("Triangle", DeclarationContextKind.TopLevel, new[] { "public" }, new[] { _base, _height }, Array.Empty<PropertyStructure>(), new[] { _calculateArea }, new[] { _constructor }, Array.Empty<ClassStructure>()) },  
         };
 
         public HttpResponseMessage CheckSubmission(string requestContent)

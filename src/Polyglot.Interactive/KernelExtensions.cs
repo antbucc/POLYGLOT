@@ -71,6 +71,7 @@ namespace Polyglot.Interactive
                            GameEngineClient.Current.AddMetric("warnings", new WarningsMetric());
                            GameEngineClient.Current.AddMetric("errors", new ErrorsMetric());
                            GameEngineClient.Current.AddMetric("newVariables", new NewVariablesMetric());
+                           GameEngineClient.Current.AddMetric("newVariablesWithValue", new NewVariablesWithValueMetric());
                            GameEngineClient.Current.AddMetric("declaredClasses", new DeclaredClassesMetric());
                            GameEngineClient.Current.AddMetric("declarationsStructure", new DeclarationsStructureMetric());
                            GameEngineClient.Current.AddMetric("topLevelClassesStructureMetric", new TopLevelClassesStructureMetric());

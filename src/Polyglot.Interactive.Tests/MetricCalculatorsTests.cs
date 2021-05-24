@@ -76,6 +76,9 @@ public class Triangle
             var _base = new FieldStructure(new VariableStructure("_base", DeclarationContextKind.Type, "float"), new[] { "private" });
             var _height = new FieldStructure(new VariableStructure("_height", DeclarationContextKind.Type, "float"), new[] { "private" });
             var _constructor = new ConstructorStructure(
+                new[] {
+                    "public"
+                },
                 new[] { 
                     new VariableStructure("b", DeclarationContextKind.Method, "float"), 
                     new VariableStructure("h", DeclarationContextKind.Method, "float") 
@@ -96,6 +99,7 @@ public class Triangle
                     DeclarationContextKind.TopLevel,
                     new[] { "public" },
                     new[] { _base, _height },
+                    new List<PropertyStructure>(),
                     new[] { calculateArea },
                     new[] { _constructor },
                     new List<ClassStructure>()
@@ -113,6 +117,54 @@ public class Triangle
                 .And
                 .BeEquivalentTo(expected, 
                                 options => options.ComparingByMembers<ClassStructure>().ComparingByMembers<MethodStructure>().ComparingByMembers<ConstructorStructure>());
+        }
+
+        [Fact]
+        public async Task can_find_declared_properties()
+        {
+            var metric = new TopLevelClassesStructureMetric();
+
+            var command = new SubmitCode(@"
+public class Test
+{
+    public float PropertyF { get; set; }
+    private string PropertyS => ""test"";
+    public int PropertyI { set; }
+
+    private double _privateField;
+    public double PropertyD
+    {
+        get { return _privateField / 3600; }
+        set { _privateField = value * 5; }
+    }
+
+}
+");
+
+            var expected = new[]
+            {
+                new PropertyStructure(new VariableStructure("PropertyF", DeclarationContextKind.Type, "float"), new[] { "public" }, new[] { "get", "set" }),
+                new PropertyStructure(new VariableStructure("PropertyS", DeclarationContextKind.Type, "string"), new[] { "private" }, new[] { "get" }),
+                new PropertyStructure(new VariableStructure("PropertyI", DeclarationContextKind.Type, "int"), new[] { "public" }, new[] { "set" }),
+                new PropertyStructure(new VariableStructure("PropertyD", DeclarationContextKind.Type, "double"), new[] { "public" }, new[] { "get", "set" })
+            };
+
+            var values = (await metric.CalculateAsync(command)) as IEnumerable<ClassStructure>;
+
+            values.Should()
+                .NotBeNullOrEmpty()
+                .And
+                .HaveCount(1);
+
+            var actual = values.Where(c => c.Name == "Test");
+
+            actual.Should()
+                .HaveCount(1)
+                .And
+                .Subject.First().As<ClassStructure>().Properties.Should()
+                .NotBeNullOrEmpty()
+                .And
+                .BeEquivalentTo(expected);
         }
 
         [Fact]
@@ -210,6 +262,7 @@ square(input);
                     DeclarationContextKind.TopLevel,
                     new List<string>(),
                     new List<FieldStructure>(),
+                    new List<PropertyStructure>(),
                     new List<MethodStructure>(),
                     new List<ConstructorStructure>(),
                     new List<ClassStructure>()
