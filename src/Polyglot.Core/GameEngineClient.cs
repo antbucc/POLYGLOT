@@ -81,11 +81,11 @@ namespace Polyglot.Core
 
         private Task<string[]> GetMetricsAsync()
         {
-            return Task.FromResult(new[] { "timeSpent", "warnings", "errors", "newVariables", "timeSinceLastAction", "success", "declaredClasses", "declarationsStructure", "topLevelClassesStructureMetric" });
+            return Task.FromResult(new[] { "timeSpent", "warnings", "errors", "newVariables", "newVariablesWithValue", "timeSinceLastAction", "success", "declaredClasses", "declarationsStructure", "topLevelClassesStructureMetric" });
         }
 
         public async Task<GameStateReport> SubmitActions(SubmitCode command, Kernel kernel,
-            List<KernelEvent> events, IReadOnlyDictionary<string, string> newVariables, TimeSpan runTime)
+            List<KernelEvent> events, IReadOnlyDictionary<string, object> newVariables, TimeSpan runTime)
         {
 
             var authenticated = await EnsureAuthentication();

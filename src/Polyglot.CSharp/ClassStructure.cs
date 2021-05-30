@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace Polyglot.CSharp
 {
-    public record ClassStructure(string Name, DeclarationContextKind Kind, IEnumerable<string> Modifiers, IEnumerable<FieldStructure> Fields, IEnumerable<MethodStructure> Methods, IEnumerable<ConstructorStructure> Constructors, IEnumerable<ClassStructure> NestedClasses)
+    public record ClassStructure(string Name, DeclarationContextKind Kind, IEnumerable<string> Modifiers, IEnumerable<FieldStructure> Fields, IEnumerable<PropertyStructure> Properties, IEnumerable<MethodStructure> Methods, IEnumerable<ConstructorStructure> Constructors, IEnumerable<ClassStructure> NestedClasses)
     {
         public virtual bool Equals(ClassStructure other)
         {
@@ -32,6 +32,17 @@ namespace Polyglot.CSharp
         }
     }
 
+    public record PropertyStructure(VariableStructure Variable, IEnumerable<string> Modifiers, IEnumerable<string> Accessors)
+    {
+        // uses Variable.Kind to avoid duplicates
+        public DeclarationContextKind Kind => Variable.Kind;
+
+        public virtual bool Equals(PropertyStructure other)
+        {
+            return new PropertyStructureComparer().Equals(this, other);
+        }
+    }
+
     public record MethodStructure(string Name, DeclarationContextKind Kind, string ReturnType, IEnumerable<string> Modifiers, IEnumerable<VariableStructure> Parameters, MethodBodyStructure Body)
     {
         public virtual bool Equals(MethodStructure other)
@@ -40,8 +51,7 @@ namespace Polyglot.CSharp
         }
     }
 
-    // TODO: add modifiers to constructor
-    public record ConstructorStructure(IEnumerable<VariableStructure> Parameters)
+    public record ConstructorStructure(IEnumerable<string> Modifiers, IEnumerable<VariableStructure> Parameters)
     {
         public DeclarationContextKind Kind => DeclarationContextKind.Type;
 
@@ -71,6 +81,7 @@ namespace Polyglot.CSharp
                 && x.Kind == y.Kind
                 && x.Modifiers.SequenceEqual(y.Modifiers)
                 && x.Fields.SequenceEqual(y.Fields, new FieldStructureComparer())
+                && x.Properties.SequenceEqual(y.Properties, new PropertyStructureComparer())
                 && x.Methods.SequenceEqual(y.Methods, new MethodStructureComparer())
                 && x.Constructors.SequenceEqual(y.Constructors, new ConstructorStructureComparer())
                 && x.NestedClasses.SequenceEqual(y.NestedClasses, new ClassStructureComparer());
@@ -111,6 +122,21 @@ namespace Polyglot.CSharp
             throw new NotImplementedException();
         }
     }
+    
+    internal class PropertyStructureComparer : IEqualityComparer<PropertyStructure>
+    {
+        public bool Equals(PropertyStructure x, PropertyStructure y)
+        {
+            return x.Variable.Equals(y.Variable)
+                && x.Kind == y.Kind
+                && x.Modifiers.SequenceEqual(y.Modifiers);
+        }
+
+        public int GetHashCode([DisallowNull] PropertyStructure obj)
+        {
+            throw new NotImplementedException();
+        }
+    }
 
     internal class MethodStructureComparer : IEqualityComparer<MethodStructure>
     {
@@ -134,7 +160,8 @@ namespace Polyglot.CSharp
     {
         public bool Equals(ConstructorStructure x, ConstructorStructure y)
         {
-            return x.Parameters.SequenceEqual(y.Parameters, new VariableStructureComparer())
+            return x.Modifiers.SequenceEqual(y.Modifiers)
+                && x.Parameters.SequenceEqual(y.Parameters, new VariableStructureComparer())
                 && x.Kind == y.Kind;
         }
 

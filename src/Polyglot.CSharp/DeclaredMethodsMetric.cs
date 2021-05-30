@@ -23,7 +23,7 @@ namespace Polyglot.CSharp
             _parserOptions = CSharpParseOptions.Default.WithKind(SourceCodeKind.Script);
         }
 
-        public Task<object> CalculateAsync(SubmitCode command, Kernel kernel = null, List<KernelEvent> events = null, IReadOnlyDictionary<string, string> newVariables = null, TimeSpan runTime = default, DateTime? lastRun = null)
+        public Task<object> CalculateAsync(SubmitCode command, Kernel kernel = null, List<KernelEvent> events = null, IReadOnlyDictionary<string, object> newVariables = null, TimeSpan runTime = default, DateTime? lastRun = null)
         {
             var tree =
                 CSharpSyntaxTree.ParseText(command.Code, _parserOptions);

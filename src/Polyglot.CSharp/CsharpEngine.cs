@@ -53,17 +53,13 @@ namespace Polyglot.CSharp
                             subscription.Dispose();
 
                             newVariables.ExceptWith(alreadyDefinedVariables);
-                            var variableData = new Dictionary<string, string>();
+                            var variableData = new Dictionary<string, object>();
 
                             foreach (var variableName in newVariables)
                             {
                                 if (cSharpKernel.TryGetVariable<object>(variableName, out var variableValue))
                                 {
-                                    variableData[variableName] = variableValue.GetType().Name;
-                                }
-                                else
-                                {
-                                    variableData[variableName] = "undefined";
+                                    variableData[variableName] = variableValue;
                                 }
                             }
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.DotNet.Interactive;
 using Microsoft.DotNet.Interactive.Commands;
@@ -13,7 +14,7 @@ namespace Polyglot.CSharp
         public string Name { get; } = "newVariables";
 
         public Task<object> CalculateAsync(SubmitCode command, Kernel kernel = null,
-            List<KernelEvent> events = null, IReadOnlyDictionary<string, string> newVariables = null, TimeSpan runTime = default,
+            List<KernelEvent> events = null, IReadOnlyDictionary<string, object> newVariables = null, TimeSpan runTime = default,
             DateTime? lastRun = null)
         {
             if (newVariables == null)
@@ -21,7 +22,10 @@ namespace Polyglot.CSharp
                 throw new ArgumentNullException(nameof(newVariables));
             }
 
-            return Task.FromResult<object>(newVariables);
+            var result = newVariables.Select(v => new KeyValuePair<string, string>(v.Key, v.Value?.GetType().Name ?? "undefined"))
+                                                          .ToDictionary(v => v.Key, v=>v.Value);
+
+            return Task.FromResult<object>(result);
         }
     }
 }

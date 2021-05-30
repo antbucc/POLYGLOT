@@ -13,7 +13,7 @@ namespace Polyglot.Interactive
         public string Name { get; } = "timeSpent";
 
         public Task<object> CalculateAsync(SubmitCode command, Kernel kernel = null,
-            List<KernelEvent> events = null, IReadOnlyDictionary<string, string> newVariables = null, TimeSpan runTime = default,
+            List<KernelEvent> events = null, IReadOnlyDictionary<string, object> newVariables = null, TimeSpan runTime = default,
             DateTime? lastRun = null)
         {
             return Task.FromResult<object>(runTime.TotalMilliseconds);

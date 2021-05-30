@@ -36,13 +36,14 @@ namespace Polyglot.CSharp
             public DeclarationContextKind Kind;
             public HashSet<string> Modifiers = new();
             public HashSet<FieldStructure> Fields = new();
+            public HashSet<PropertyStructure> Properties = new();
             public HashSet<MethodStructure> Methods = new();
             public HashSet<ConstructorStructure> Constructors = new();
             public HashSet<DeclarationContext> NestedClasses = new();
 
             public DeclarationContextKind ChildKind => Kind == DeclarationContextKind.Root ? DeclarationContextKind.TopLevel : DeclarationContextKind.Type;
 
-            public ClassStructure ClassStructure => new ClassStructure(Name, Kind, Modifiers, Fields, Methods, Constructors, NestedClasses.Select(c => c.ClassStructure));
+            public ClassStructure ClassStructure => new ClassStructure(Name, Kind, Modifiers, Fields, Properties, Methods, Constructors, NestedClasses.Select(c => c.ClassStructure));
         }
 
         private class MethodContext
@@ -100,11 +101,23 @@ namespace Polyglot.CSharp
             base.VisitLocalDeclarationStatement(node);
         }
 
-        //public override void VisitPropertyDeclaration(PropertyDeclarationSyntax node)
-        //{
-        //    base.VisitPropertyDeclaration(node);
-        //}
+        public override void VisitPropertyDeclaration(PropertyDeclarationSyntax node)
+        {
+            var name = node.Identifier.ValueText;
+            var type = node.Type.ToString();
+            var modifiers = node.Modifiers.Select(m => m.ValueText);
 
+            var accessors = node?.AccessorList?.Accessors.Select(a => a.Keyword.ValueText);
+            
+            if(node.ExpressionBody is not null)
+            {
+                accessors = new[] { "set" };
+            }
+
+            _current.Properties.Add(new PropertyStructure(new VariableStructure(name, DeclarationContextKind.Type, type), modifiers, accessors));
+
+            base.VisitPropertyDeclaration(node);
+        }
 
         public override void VisitMethodDeclaration(MethodDeclarationSyntax node)
         {
@@ -126,8 +139,9 @@ namespace Polyglot.CSharp
         public override void VisitConstructorDeclaration(ConstructorDeclarationSyntax node)
         {
             var parameters = node.ParameterList.Parameters.Select(param => new VariableStructure(param.Identifier.ValueText, DeclarationContextKind.Method ,param.Type.ToString()));
+            var modifiers = node.Modifiers.Select(m => m.ValueText);
 
-            var constructor = new ConstructorStructure(parameters);
+            var constructor = new ConstructorStructure(modifiers, parameters);
             _current.Constructors.Add(constructor);
 
             base.VisitConstructorDeclaration(node);
