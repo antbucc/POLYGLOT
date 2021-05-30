@@ -30,6 +30,8 @@ namespace Polyglot.CSharp
         private DeclarationContext _current;
         private MethodContext _currentMethod;
 
+        private static CodeString Dummyfy(string str) => new CodeString(str, new StringSpan(1, 2));
+
         private class DeclarationContext
         {
             public string Name;
@@ -43,7 +45,8 @@ namespace Polyglot.CSharp
 
             public DeclarationContextKind ChildKind => Kind == DeclarationContextKind.Root ? DeclarationContextKind.TopLevel : DeclarationContextKind.Type;
 
-            public ClassStructure ClassStructure => new ClassStructure(Name, Kind, Modifiers, Fields, Properties, Methods, Constructors, NestedClasses.Select(c => c.ClassStructure));
+            public ClassStructure ClassStructure => new ClassStructure(Dummyfy(Name), Kind, Modifiers.Select(m => Dummyfy(m)), Fields, Properties, Methods, Constructors, NestedClasses.Select(c => c.ClassStructure));
+            // public ClassStructure ClassStructure => new ClassStructure(Name, Kind, Modifiers, Fields, Methods, Constructors, NestedClasses.Select(c => c.ClassStructure));
         }
 
         private class MethodContext
@@ -82,8 +85,8 @@ namespace Polyglot.CSharp
             var modifiers = node.Modifiers.Select(m => m.ValueText);
 
             _current.Fields.UnionWith(node.Declaration.Variables.Select(varSyntax => varSyntax.Identifier.ValueText)
-                                                                      .Select(name => new VariableStructure(name, _current.ChildKind, type))
-                                                                      .Select(@var => new FieldStructure(@var, modifiers)));
+                                                                      .Select(name => new VariableStructure(Dummyfy(name), _current.ChildKind, Dummyfy(type)))
+                                                                      .Select(@var => new FieldStructure(@var, modifiers.Select(m => Dummyfy(m)))));
 
             base.VisitFieldDeclaration(node);
         }
@@ -95,7 +98,7 @@ namespace Polyglot.CSharp
             if (_currentMethod is not null)
             {
                 _currentMethod.LocalVariables.UnionWith(node.Declaration.Variables.Select(varSyntax => varSyntax.Identifier.ValueText)
-                                                                                        .Select(name => new VariableStructure(name, DeclarationContextKind.Method, type)));
+                                                                                        .Select(name => new VariableStructure(Dummyfy(name), DeclarationContextKind.Method, Dummyfy(type))));
             }
 
             base.VisitLocalDeclarationStatement(node);
@@ -114,7 +117,7 @@ namespace Polyglot.CSharp
                 accessors = new[] { "set" };
             }
 
-            _current.Properties.Add(new PropertyStructure(new VariableStructure(name, DeclarationContextKind.Type, type), modifiers, accessors));
+            _current.Properties.Add(new PropertyStructure(new VariableStructure(Dummyfy(name), DeclarationContextKind.Type, Dummyfy(type)), modifiers.Select(m => Dummyfy(m)), accessors.Select(a => Dummyfy(a))));
 
             base.VisitPropertyDeclaration(node);
         }
@@ -125,20 +128,20 @@ namespace Polyglot.CSharp
             var returnType = node.ReturnType.ToString();
             var modifiers = node.Modifiers.Select(m => m.ValueText);
 
-            var parameters = node.ParameterList.Parameters.Select(param => new VariableStructure(param.Identifier.ValueText, DeclarationContextKind.Method, param.Type.ToString()));
+            var parameters = node.ParameterList.Parameters.Select(param => new VariableStructure(Dummyfy(param.Identifier.ValueText), DeclarationContextKind.Method, Dummyfy(param.Type.ToString())));
 
             _currentMethod = new MethodContext();
             base.VisitMethodDeclaration(node);
             var body = new MethodBodyStructure(_currentMethod.LocalVariables);
             _currentMethod = null;
 
-            var method = new MethodStructure(name, _current.ChildKind, returnType, modifiers, parameters, body);
+            var method = new MethodStructure(Dummyfy(name), _current.ChildKind, Dummyfy(returnType), modifiers.Select(m => Dummyfy(m)), parameters, body);
             _current.Methods.Add(method);
         }
 
         public override void VisitConstructorDeclaration(ConstructorDeclarationSyntax node)
         {
-            var parameters = node.ParameterList.Parameters.Select(param => new VariableStructure(param.Identifier.ValueText, DeclarationContextKind.Method ,param.Type.ToString()));
+            var parameters = node.ParameterList.Parameters.Select(param => new VariableStructure(Dummyfy(param.Identifier.ValueText), DeclarationContextKind.Method, Dummyfy(param.Type.ToString())));
             var modifiers = node.Modifiers.Select(m => m.ValueText);
 
             var constructor = new ConstructorStructure(modifiers, parameters);

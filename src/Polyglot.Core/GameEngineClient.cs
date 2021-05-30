@@ -137,6 +137,7 @@ namespace Polyglot.Core
                 KernelInvocationContext.Current?.Publish(new ErrorProduced(response.ReasonPhrase,
                     KernelInvocationContext.Current?.Command, formattedValues));
 
+                _lastRun = DateTime.Now;
                 return null;
             }
 
