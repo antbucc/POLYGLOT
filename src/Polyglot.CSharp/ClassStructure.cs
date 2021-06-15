@@ -1,11 +1,11 @@
-﻿using System;
+﻿using Polyglot.Core;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace Polyglot.CSharp
 {
-    public record StringSpan(int Start, int End);
     public record CodeString(string Value, StringSpan Span);
 
     public record ClassStructure(CodeString Name, DeclarationContextKind Kind, IEnumerable<CodeString> Modifiers, IEnumerable<FieldStructure> Fields, IEnumerable<PropertyStructure> Properties, IEnumerable<MethodStructure> Methods, IEnumerable<ConstructorStructure> Constructors, IEnumerable<ClassStructure> NestedClasses)
@@ -54,7 +54,7 @@ namespace Polyglot.CSharp
         }
     }
 
-    public record ConstructorStructure(IEnumerable<string> Modifiers, IEnumerable<VariableStructure> Parameters)
+    public record ConstructorStructure(IEnumerable<CodeString> Modifiers, IEnumerable<VariableStructure> Parameters)
     {
         public DeclarationContextKind Kind => DeclarationContextKind.Type;
 

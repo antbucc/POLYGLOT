@@ -211,9 +211,11 @@ namespace Polyglot.Core
             var scoring = gameStatus.State.PointConcept.ToDictionary(p => p.Name);
 
             return new GameStateReport(_currentLevel,
-                scoring["points"].Score,
-                scoring["gold coins"].Score,
-                _gameStatus.CustomData.Feedback ?? "");
+                scoring["exercisePoints"].Score,
+                scoring["assignmentPoints"].Score,
+                scoring["exerciseGoldCoins"].Score,
+                scoring["assignmentGoldCoins"].Score,
+                _gameStatus.CustomData.Feedbacks?.Select(f => f.Text) ?? new List<string>());
         }
 
         public static void Reset()

@@ -130,7 +130,7 @@ namespace Polyglot.Interactive.Tests
 
             var report = await GameEngineClient.Current.GetReportAsync();
 
-            report.Points.Should().Be(0);
+            report.AssignmentPoints.Should().Be(0);
         }
 
         [Fact]
@@ -148,7 +148,7 @@ a"), CancellationToken.None);
 
             var report = await GameEngineClient.Current.GetReportAsync();
 
-            report.Points.Should().Be(0);
+            report.AssignmentPoints.Should().Be(0);
         }
 
         [Fact]
@@ -182,7 +182,7 @@ MyCode.DoIt();"), CancellationToken.None);
 
             var report = await GameEngineClient.Current.GetReportAsync();
 
-            report.Points.Should().Be(0);
+            report.AssignmentPoints.Should().Be(0);
         }
 
         [Fact]
@@ -209,7 +209,7 @@ MyCode.DoIt();"), CancellationToken.None);
             var report = await GameEngineClient.Current.GetReportAsync();
 
             report.CurrentLevel.Should().Be("0");
-            report.Points.Should().Be(0);
+            report.AssignmentPoints.Should().Be(0);
 
             await kernel.SendAsync(new SubmitCode(@"
 public class Triangle {}                
@@ -218,7 +218,7 @@ public class Triangle {}
             report = await GameEngineClient.Current.GetReportAsync();
 
             report.CurrentLevel.Should().Be("1");
-            report.Points.Should().Be(10);
+            report.AssignmentPoints.Should().Be(10);
 
             await kernel.SendAsync(new SubmitCode(@"
 public class Triangle
@@ -230,7 +230,7 @@ public class Triangle
             report = await GameEngineClient.Current.GetReportAsync();
 
             report.CurrentLevel.Should().Be("2");
-            report.Points.Should().Be(20);
+            report.AssignmentPoints.Should().Be(20);
 
             await kernel.SendAsync(new SubmitCode(@"
 public class Triangle
@@ -248,7 +248,7 @@ public class Triangle
             report = await GameEngineClient.Current.GetReportAsync();
 
             report.CurrentLevel.Should().Be("3");
-            report.Points.Should().Be(30);
+            report.AssignmentPoints.Should().Be(30);
 
             await kernel.SendAsync(new SubmitCode(@"
 public class Triangle
@@ -271,7 +271,7 @@ public class Triangle
             report = await GameEngineClient.Current.GetReportAsync();
 
             report.CurrentLevel.Should().Be("4");
-            report.Points.Should().Be(40);
+            report.AssignmentPoints.Should().Be(40);
         }
 
         [Fact]
@@ -286,7 +286,7 @@ public class Triangle
             var report = await GameEngineClient.Current.GetReportAsync();
 
             report.CurrentLevel.Should().Be("0");
-            report.Points.Should().Be(0);
+            report.AssignmentPoints.Should().Be(0);
 
             await kernel.SendAsync(new SubmitCode(@"
 public class Triangle {}                
@@ -295,8 +295,8 @@ public class Triangle {}
             report = await GameEngineClient.Current.GetReportAsync();
 
             report.CurrentLevel.Should().Be("1");
-            report.Points.Should().Be(10);
-            report.GoldCoins.Should().Be(2);
+            report.AssignmentPoints.Should().Be(10);
+            report.AssignmentGoldCoins.Should().Be(2);
 
             await kernel.SendAsync(new SubmitCode(@"
 public class Triangle
@@ -308,8 +308,8 @@ public class Triangle
             report = await GameEngineClient.Current.GetReportAsync();
 
             report.CurrentLevel.Should().Be("2");
-            report.Points.Should().Be(20);
-            report.GoldCoins.Should().Be(4);
+            report.AssignmentPoints.Should().Be(20);
+            report.AssignmentGoldCoins.Should().Be(4);
 
             await kernel.SendAsync(new SubmitCode(@"
 public class Triangle
@@ -327,8 +327,8 @@ public class Triangle
             report = await GameEngineClient.Current.GetReportAsync();
 
             report.CurrentLevel.Should().Be("3");
-            report.Points.Should().Be(25);
-            report.GoldCoins.Should().Be(6);
+            report.AssignmentPoints.Should().Be(25);
+            report.AssignmentGoldCoins.Should().Be(6);
 
             await kernel.SendAsync(new SubmitCode(@"
 public class Triangle
@@ -351,8 +351,8 @@ public class Triangle
             report = await GameEngineClient.Current.GetReportAsync();
 
             report.CurrentLevel.Should().Be("4");
-            report.Points.Should().Be(30);
-            report.GoldCoins.Should().Be(8);
+            report.AssignmentPoints.Should().Be(30);
+            report.AssignmentGoldCoins.Should().Be(8);
         }
     }
 }

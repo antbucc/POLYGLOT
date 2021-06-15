@@ -67,6 +67,10 @@ namespace Polyglot.CSharp
                                 timer.Elapsed);
                             if (report is { })
                             {
+                                //var _diagnosticDescriptor = new DiagnosticDescriptor("POLYGLOT 001", "sas", "sas", "sas", DiagnosticSeverity.Warning, true, null, null, null);
+                                //var tree = CSharpSyntaxTree.ParseText(submitCode.Code, CSharpParseOptions.Default.WithKind(SourceCodeKind.Script));
+                                //var diagnostic = Microsoft.CodeAnalysis.Diagnostic.Create(_diagnosticDescriptor, Location.Create(tree, new TextSpan(10, 20)));
+                                //Microsoft.DotNet.Interactive.Diagnostic.FromCodeAnalysisDiagnostic(diagnostic);
                                 c.Display(report);
                             }
                         }
