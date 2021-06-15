@@ -51,7 +51,7 @@ namespace Polyglot.Interactive
                 );
 
                 var divStyle = "font-size: 2em; display: flex; justify-content: center; align-items: center";
-
+                var flames =string.Join("", Enumerable.Range(0, (int)report.AssignmentGoldCoins).Select(_ => "🥇"));
                 var html = div[style: "width:800px; border: 1px solid black; padding: 5px"](
                     h1[style: "margin-left: 10px"]("Report"),
                     table(
@@ -59,7 +59,7 @@ namespace Polyglot.Interactive
                             td[style: "width: 50px"]("Level:"), td[style: "width:150px"](div[style: divStyle](report.CurrentLevel)),
                             td[style: "width: 50px"]("Exercise Points:"), td[style: "width:150px"](div[style: divStyle](report.ExercisePoints)),
                             td[style: "width: 50px"]("Assignment Score:"), td[style: "width:150px"](p[style: "font-size:3em"](scoreEmoji(scoreImage))),
-                            td[style: "width: 50px"]("Coins:"), td[style: "width:150px"](div[style: divStyle]($"{report.AssignmentGoldCoins} x", img[src: "https://www.iconpacks.net/icons/1/free-icon-coin-794.png", style: "margin-left: 5px; height:2em"]))
+                            td[style: "width: 150px"]("Medals:"), td[style: "width:150px"](p[style: "font-size:3em"](flames))
                         )
                     ),
                     h2[style: ("margin-left: 10px;" + feedbackDisplay)]("Feedbacks"),
