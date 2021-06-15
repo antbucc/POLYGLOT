@@ -31,19 +31,15 @@ namespace Polyglot.Interactive
 
             Formatter.Register<GameStateReport>((report, writer) =>
             {
-                string scoreImage = (int)report.AssignmentPoints switch
+                var scoreImage = (int)report.AssignmentPoints switch
                 {
-                    // int n when (0 <= n && n <= 15) => "https://img-premium.flaticon.com/png/512/132/132268.png?token=exp=1621862049~hmac=98ca862d52589f9f24a042d968629476",
-                    // int n when (15 < n && n <= 30) => "https://img-premium.flaticon.com/png/512/132/132272.png?token=exp=1621862102~hmac=1f9149d59b300dcee8d56480655d9c98",
-                    // int n when (30 < n && n <= 50) => "https://img-premium.flaticon.com/png/512/132/132233.png?token=exp=1621862133~hmac=782c516c9a4d23fb6397f7d6a69ea932",
-                    // int n when (50 < n && n <= 75) => "https://img-premium.flaticon.com/png/512/132/132269.png?token=exp=1621862135~hmac=5421b42cf5d63ddefe2dec47d1e70597",
-                    // int n when (75 < n && n <= 100) => "https://img-premium.flaticon.com/png/512/132/132250.png?token=exp=1621862139~hmac=92483f00db5c501effec203fd5534ba7",
-                    int n when (0 <= n && n <= 10) => "https://img-premium.flaticon.com/png/512/132/132268.png?token=exp=1621862049~hmac=98ca862d52589f9f24a042d968629476",
-                    int n when (10 < n && n <= 20) => "https://img-premium.flaticon.com/png/512/132/132272.png?token=exp=1621862102~hmac=1f9149d59b300dcee8d56480655d9c98",
-                    int n when (20 < n && n <= 30) => "https://img-premium.flaticon.com/png/512/132/132233.png?token=exp=1621862133~hmac=782c516c9a4d23fb6397f7d6a69ea932",
-                    int n when (30 < n && n <= 40) => "https://img-premium.flaticon.com/png/512/132/132269.png?token=exp=1621862135~hmac=5421b42cf5d63ddefe2dec47d1e70597",
-                    int n when (40 < n && n <= 50) => "https://img-premium.flaticon.com/png/512/132/132250.png?token=exp=1621862139~hmac=92483f00db5c501effec203fd5534ba7",
-                    _ => "https://img-premium.flaticon.com/png/512/132/132250.png?token=exp=1621862139~hmac=92483f00db5c501effec203fd5534ba7"
+
+                    var n when (0 <= n && n <= 10) => "🙂",
+                    var n when (10 < n && n <= 20) => "😊",
+                    var n when (20 < n && n <= 30) => "🤗",
+                    var n when (30 < n && n <= 40) => "😍",
+                    var n when (40 < n && n <= 50) => "🤩",
+                    _ => "😑"
                 };
 
                 var feedbackDisplay = report.Feedbacks.Count() == 0 ? "display:none" : "";
@@ -62,7 +58,7 @@ namespace Polyglot.Interactive
                         tr(
                             td[style: "width: 50px"]("Level:"), td[style: "width:150px"](div[style: divStyle](report.CurrentLevel)),
                             td[style: "width: 50px"]("Exercise Points:"), td[style: "width:150px"](div[style: divStyle](report.ExercisePoints)),
-                            td[style: "width: 50px"]("Assignment Score:"), td[style: "width:150px"](div[style: divStyle](img[src: scoreImage, style: "height:2em"])),
+                            td[style: "width: 50px"]("Assignment Score:"), td[style: "width:150px"](p[style: "font-size:3em"](scoreEmoji(scoreImage))),
                             td[style: "width: 50px"]("Coins:"), td[style: "width:150px"](div[style: divStyle]($"{report.AssignmentGoldCoins} x", img[src: "https://www.iconpacks.net/icons/1/free-icon-coin-794.png", style: "margin-left: 5px; height:2em"]))
                         )
                     ),
@@ -80,6 +76,11 @@ namespace Polyglot.Interactive
             // <div>Icons made by <a href="https://www.flaticon.com/authors/baianat" title="Baianat">Baianat</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></div>
 
             return Task.CompletedTask;
+        }
+
+        private static string scoreEmoji(string scoreImage)
+        {
+            return scoreImage;
         }
     }
 }
