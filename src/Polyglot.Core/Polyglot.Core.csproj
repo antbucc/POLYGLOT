@@ -6,6 +6,7 @@
     <RepositoryUrl>https://github.com/antbucc/POLYGLOT</RepositoryUrl>
     <PackageProjectUrl>https://github.com/antbucc/POLYGLOT</PackageProjectUrl>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <IsPackable>true</IsPackable>
     <Version>1.0.3</Version>
   </PropertyGroup>
 
