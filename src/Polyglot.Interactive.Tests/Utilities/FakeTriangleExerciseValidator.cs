@@ -12,21 +12,21 @@ namespace Polyglot.Interactive.Tests
     {
         private int _currentLevel = 0;
 
-        private static FieldStructure _base = new FieldStructure(new VariableStructure("_base", DeclarationContextKind.Type, "float"), new[] { "private" });
-        private static FieldStructure _height = new FieldStructure(new VariableStructure("_height", DeclarationContextKind.Type, "float"), new[] { "private" });
-        private static ConstructorStructure _constructor = new(new[] { "public" }, new[] { new VariableStructure("base", DeclarationContextKind.Method, "float"), new VariableStructure("height", DeclarationContextKind.Method, "float") });
-        private static MethodStructure _calculateArea = new MethodStructure("calculateArea", DeclarationContextKind.Type, "float", new[] { "public" }, Array.Empty<VariableStructure>(), new MethodBodyStructure(Array.Empty<VariableStructure>()));
+        private static FieldStructure _base = new FieldStructure(new VariableStructure(new CodeString("_base", new StringSpan(1, 2)), DeclarationContextKind.Type, new CodeString("float", new StringSpan(1, 2))), new[] { new CodeString("private", new StringSpan(1, 2)) });
+        private static FieldStructure _height = new FieldStructure(new VariableStructure(new CodeString("_height", new StringSpan(1, 2)), DeclarationContextKind.Type, new CodeString("float", new StringSpan(1, 2))), new[] { new CodeString("private", new StringSpan(1, 2)) });
+        private static ConstructorStructure _constructor = new(new[] { new CodeString("public", new StringSpan(1, 2)) }, new[] { new VariableStructure(new CodeString("base", new StringSpan(1, 2)), DeclarationContextKind.Method, new CodeString("float", new StringSpan(1, 2))), new VariableStructure(new CodeString("height", new StringSpan(1, 2)), DeclarationContextKind.Method, new CodeString("float", new StringSpan(1, 2))) });
+        private static MethodStructure _calculateArea = new MethodStructure(new CodeString("calculateArea", new StringSpan(1, 2)), DeclarationContextKind.Type, new CodeString("float", new StringSpan(1, 2)), new[] { new CodeString("public", new StringSpan(1, 2)) }, Array.Empty<VariableStructure>(), new MethodBodyStructure(Array.Empty<VariableStructure>()));
 
         private Dictionary<int, ClassStructure> _expectedResults = new()
         {
             // step 1: class declaration
-            { 0, new ClassStructure("Triangle", DeclarationContextKind.TopLevel, new[] { "public" }, Array.Empty<FieldStructure>(), Array.Empty<PropertyStructure>(), Array.Empty<MethodStructure>(), Array.Empty<ConstructorStructure>(), Array.Empty<ClassStructure>()) },     
+            { 0, new ClassStructure(new CodeString("Triangle", new StringSpan(1, 2)), DeclarationContextKind.TopLevel, new[] { new CodeString("public", new StringSpan(1, 2)) }, Array.Empty<FieldStructure>(), Array.Empty<PropertyStructure>(), Array.Empty<MethodStructure>(), Array.Empty<ConstructorStructure>(), Array.Empty<ClassStructure>()) },     
             // step 2: field declaration
-            { 1, new ClassStructure("Triangle", DeclarationContextKind.TopLevel, new[] { "public" }, new[] { _base, _height }, Array.Empty<PropertyStructure>(), Array.Empty<MethodStructure>(), Array.Empty<ConstructorStructure>(), Array.Empty<ClassStructure>()) },          
+            { 1, new ClassStructure(new CodeString("Triangle", new StringSpan(1, 2)), DeclarationContextKind.TopLevel, new[] { new CodeString("public", new StringSpan(1, 2)) }, new[] { _base, _height }, Array.Empty<PropertyStructure>(), Array.Empty<MethodStructure>(), Array.Empty<ConstructorStructure>(), Array.Empty<ClassStructure>()) },          
             // step 3: constructor
-            { 2, new ClassStructure("Triangle", DeclarationContextKind.TopLevel, new[] { "public" }, new[] { _base, _height }, Array.Empty<PropertyStructure>(), Array.Empty<MethodStructure>(), new[] { _constructor }, Array.Empty<ClassStructure>()) },          
+            { 2, new ClassStructure(new CodeString("Triangle", new StringSpan(1, 2)), DeclarationContextKind.TopLevel, new[] { new CodeString("public", new StringSpan(1, 2)) }, new[] { _base, _height }, Array.Empty<PropertyStructure>(), Array.Empty<MethodStructure>(), new[] { _constructor }, Array.Empty<ClassStructure>()) },          
             // step 4: Area method
-            { 3, new ClassStructure("Triangle", DeclarationContextKind.TopLevel, new[] { "public" }, new[] { _base, _height }, Array.Empty<PropertyStructure>(), new[] { _calculateArea }, new[] { _constructor }, Array.Empty<ClassStructure>()) },  
+            { 3, new ClassStructure(new CodeString("Triangle", new StringSpan(1, 2)), DeclarationContextKind.TopLevel, new[] { new CodeString("public", new StringSpan(1, 2)) }, new[] { _base, _height }, Array.Empty<PropertyStructure>(), new[] { _calculateArea }, new[] { _constructor }, Array.Empty<ClassStructure>()) },  
         };
 
         public HttpResponseMessage CheckSubmission(string requestContent)
@@ -37,7 +37,7 @@ namespace Polyglot.Interactive.Tests
             var declarationsMetricObj = metrics?.data["topLevelClassesStructureMetric"];
             var declarationsMetric = declarationsMetricObj?.ToString().ToObject<IEnumerable<ClassStructure>>();
 
-            var exerciseData = declarationsMetric?.Where(c => c.Name == "Triangle").FirstOrDefault();
+            var exerciseData = declarationsMetric?.Where(c => c.Name.Value == "Triangle").FirstOrDefault();
 
             if (exerciseData is null)
             {
@@ -79,8 +79,8 @@ namespace Polyglot.Interactive.Tests
             return new GameStatus(
                 "dummyPlayerId",
                 "dummyGameId",
-                new GameState(new[] { new PointConcept("0", "points", _currentLevel * 10), new PointConcept("1", "gold coins", _currentLevel) }),
-                new CustomData(_currentLevel.ToString(), "")
+                new GameState(new[] { new PointConcept("0", "assignmentPoints", _currentLevel * 10), new PointConcept("0", "exercisePoints", _currentLevel * 10), new PointConcept("1", "assignmentGoldCoins", _currentLevel), new PointConcept("1", "exerciseGoldCoins", 1) }),
+                new CustomData(_currentLevel.ToString(), Array.Empty<Feedback>())
             );
         }
     }

@@ -15,7 +15,11 @@ namespace Polyglot.Core
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
                 IgnoreNullValues = true,
                 Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-                WriteIndented = true
+                WriteIndented = true,
+                Converters =
+                {
+                    new NumberFloatJsonConverterFactory()
+                }
             };
 
         public static StringContent ToBody(this object source)
