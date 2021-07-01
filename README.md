@@ -2,7 +2,7 @@
 
 A Gamified .NET Interactive Framework for Teaching and Learning Multi-Language Programming for High School and Undergraduate Students
 
-Currently, Polyglot only works with C# but we're working on the support for the other .NET Interactive languages (F#, Javascript, ...) and SysML
+Currently, Polyglot only works with C# but we're working on the support for the other .NET Interactive languages (F#, Javascript, ...) and [SysML V2] (https://www.omgsysml.org/SysML-2.htm)
 
 See it in action in the video below!
 
