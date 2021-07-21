@@ -18,6 +18,7 @@ namespace Polyglot.Core
                 WriteIndented = true,
                 Converters =
                 {
+                    new JsonStringEnumConverter(),
                     new NumberFloatJsonConverterFactory()
                 }
             };

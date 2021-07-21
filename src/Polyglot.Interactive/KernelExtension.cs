@@ -6,7 +6,7 @@ using Microsoft.DotNet.Interactive;
 using Microsoft.DotNet.Interactive.Formatting;
 using Polyglot.Core;
 using Polyglot.CSharp;
-
+using SysML.Interactive;
 using static Microsoft.DotNet.Interactive.Formatting.PocketViewTags;
 
 namespace Polyglot.Interactive
@@ -20,8 +20,10 @@ namespace Polyglot.Interactive
 
         public async Task OnLoadAsync(Kernel kernel, Func<HttpClient> httpClientFactory)
         {
+            (Kernel.Root as CompositeKernel).UseSysML();
             await kernel.VisitSubkernelsAndSelfAsync(k => InstallGameEngineAsync(k, httpClientFactory));
             await Engine.Instance.InstallLanguageEngineAsync(new CsharpEngine());
+            await Engine.Instance.InstallLanguageEngineAsync(new SysMLEngine());
         }
 
         private Task InstallGameEngineAsync(Kernel targetKernel, Func<HttpClient> httpClientFactory)

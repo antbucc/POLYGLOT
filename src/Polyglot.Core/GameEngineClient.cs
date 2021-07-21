@@ -84,6 +84,17 @@ namespace Polyglot.Core
             return Task.FromResult(new[] { "timeSpent", "warnings", "errors", "newVariables", "newVariablesWithValue", "timeSinceLastAction", "success", "declaredClasses", "declarationsStructure", "topLevelClassesStructureMetric" });
         }
 
+        private Task<string[]> GetMetricsAsync(Kernel kernel)
+        {
+            switch(kernel.Name)
+            {
+                case "sysml":
+                    return Task.FromResult(new[] { "definitionStructure" });
+                default:
+                    return GetMetricsAsync();
+            }
+        }
+
         public async Task<GameStateReport> SubmitActions(SubmitCode command, Kernel kernel,
             List<KernelEvent> events, IReadOnlyDictionary<string, object> newVariables, TimeSpan runTime)
         {
@@ -103,7 +114,8 @@ namespace Polyglot.Core
             var callUrl = new Uri(ServerUrl, "api/submit-code");
 
             // find required metrics for current stage
-            var metrics = await GetMetricsAsync();
+            //var metrics = await GetMetricsAsync();
+            var metrics = await GetMetricsAsync(kernel);
 
             var data = new Dictionary<string, object>();
 
@@ -126,6 +138,7 @@ namespace Polyglot.Core
                 gameId = GameId,
                 playerId = PlayerId,
                 exerciseNumber = _currentLevel,
+                language = kernel.Name,
                 data = data
             };
 

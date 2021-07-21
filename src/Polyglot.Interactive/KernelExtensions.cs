@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.DotNet.Interactive;
 using Polyglot.Core;
 using Polyglot.CSharp;
+using Polyglot.SysML;
 
 namespace Polyglot.Interactive
 {
@@ -75,6 +76,7 @@ namespace Polyglot.Interactive
                            GameEngineClient.Current.AddMetric("declaredClasses", new DeclaredClassesMetric());
                            GameEngineClient.Current.AddMetric("declarationsStructure", new DeclarationsStructureMetric());
                            GameEngineClient.Current.AddMetric("topLevelClassesStructureMetric", new TopLevelClassesStructureMetric());
+                           GameEngineClient.Current.AddMetric("definitionStructure", new DefinitionStructureMetric());
 
 
                            context?.Display(
