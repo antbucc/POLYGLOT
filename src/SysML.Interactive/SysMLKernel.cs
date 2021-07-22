@@ -19,41 +19,11 @@ namespace SysML.Interactive
         IKernelCommandHandler<SubmitCode>
     {
         private SysMLRpcClient SysMLRpcClient { get; set; }
+        private Process SysMLProcess { get; set; }
 
         public SysMLKernel() : base("sysml")
         {
-            var sysMLJarPath = Environment.GetEnvironmentVariable("SYSML_JAR_PATH");
-            if(sysMLJarPath is null)
-            {
-                throw new Exception("Environment variable \"SYSML_JAR_PATH\" is not set");
-            }
-
-            var psi = new ProcessStartInfo
-            {
-                FileName = "java",
-                Arguments = $"-jar SysMLKernelServer.jar",
-                RedirectStandardInput = true,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                UseShellExecute = false,
-                WorkingDirectory = sysMLJarPath
-            };
-
-            var path = Environment.GetEnvironmentVariable("PATH");
-            psi.EnvironmentVariables["PATH"] = $"{path};{sysMLJarPath}";
-
-            var SysMLProcess = new Process { StartInfo = psi, EnableRaisingEvents = true };
-            RegisterForDisposal(() =>
-            {
-                SysMLRpcClient = null;
-                SysMLProcess.Kill(true);
-                SysMLProcess.Dispose();
-            });
-
-            SysMLProcess.Start();
-            SetProcessEventHandlers(SysMLProcess);
-
-            SysMLRpcClient = new(SysMLProcess.StandardInput.BaseStream, SysMLProcess.StandardOutput.BaseStream);
+            
         }
 
         private void SetProcessEventHandlers(Process SysMLProcess)
@@ -72,6 +42,8 @@ namespace SysML.Interactive
 
         public async Task HandleAsync(SubmitCode submitCode, KernelInvocationContext context)
         {
+            EnsureSysMLKernelServerIsRunning();
+
             var result = await SysMLRpcClient.EvalAsync(submitCode.Code);
 
             var errors = result.SyntaxErrors.Concat(result.SemanticErrors).ToList();
@@ -93,8 +65,68 @@ namespace SysML.Interactive
             var svg = new SysMLSvg(svgText);
 
             context.Display(svg, HtmlFormatter.MimeType);
-            context.Publish(new ReturnValueProduced(result, submitCode, FormattedValue.FromObject(result)));
+            context.Publish(new ReturnValueProduced(result, submitCode));
+        }
 
+        private void EnsureSysMLKernelServerIsRunning()
+        {
+            if (SysMLProcess is null)
+            {
+                EnsureJavaRuntimeIsInstalled();
+
+                var sysMLJarPath = Environment.GetEnvironmentVariable("SYSML_JAR_PATH");
+                if (sysMLJarPath is null)
+                {
+                    throw new Exception("Environment variable \"SYSML_JAR_PATH\" is not set");
+                }
+
+                var psi = new ProcessStartInfo
+                {
+                    FileName = "java",
+                    Arguments = $"-jar SysMLKernelServer.jar",
+                    RedirectStandardInput = true,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    UseShellExecute = false,
+                    WorkingDirectory = sysMLJarPath
+                };
+
+                var path = Environment.GetEnvironmentVariable("PATH");
+                psi.EnvironmentVariables["PATH"] = $"{path};{sysMLJarPath}";
+
+                SysMLProcess = new Process { StartInfo = psi, EnableRaisingEvents = true };
+                RegisterForDisposal(() =>
+                {
+                    SysMLRpcClient = null;
+                    SysMLProcess.Kill(true);
+                    SysMLProcess.Dispose();
+                });
+
+                SysMLProcess.Start();
+                SetProcessEventHandlers(SysMLProcess);
+
+                SysMLRpcClient = new(SysMLProcess.StandardInput.BaseStream, SysMLProcess.StandardOutput.BaseStream);
+            }
+        }
+
+        private static void EnsureJavaRuntimeIsInstalled()
+        {
+            try
+            {
+                var psi = new ProcessStartInfo
+                {
+                    FileName = "java.exe",
+                    Arguments = " -version",
+                    RedirectStandardError = true,
+                    UseShellExecute = false
+                };
+
+                Process pr = Process.Start(psi);
+            }
+            catch (Exception)
+            {
+                throw new Exception("Missing JRE. JRE is required to use the SysML Kernel");
+            }
         }
     }
 
