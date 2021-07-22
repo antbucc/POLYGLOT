@@ -22,16 +22,25 @@ namespace SysML.Interactive
 
         public SysMLKernel() : base("sysml")
         {
+            var sysMLJarPath = Environment.GetEnvironmentVariable("SYSML_JAR_PATH");
+            if(sysMLJarPath is null)
+            {
+                throw new Exception("Environment variable \"SYSML_JAR_PATH\" is not set");
+            }
 
             var psi = new ProcessStartInfo
             {
                 FileName = "java",
-                Arguments = @"-jar path-to-jar",
+                Arguments = $"-jar SysMLKernelServer.jar",
                 RedirectStandardInput = true,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 UseShellExecute = false,
+                WorkingDirectory = sysMLJarPath
             };
+
+            var path = Environment.GetEnvironmentVariable("PATH");
+            psi.EnvironmentVariables["PATH"] = $"{path};{sysMLJarPath}";
 
             var SysMLProcess = new Process { StartInfo = psi, EnableRaisingEvents = true };
             RegisterForDisposal(() =>
@@ -117,6 +126,11 @@ namespace SysML.Interactive
                 var html = div(new HtmlString(value.Svg));
                 writer.Write(html);
             }, HtmlFormatter.MimeType);
+
+            Formatter.Register<SysMLInteractiveResult>((value, writer) =>
+            {
+                writer.Write($"done with {value.Warnings?.Count()} warnings.");
+            }, PlainTextFormatter.MimeType);
         }
     }
 }
