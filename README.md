@@ -6,6 +6,8 @@ Currently, Polyglot works with C# and [SysML V2](https://www.omgsysml.org/SysML-
 
 See it in action in the video below!
 
+https://user-images.githubusercontent.com/41111850/126717413-26cc4ef8-9af6-440a-82ed-d55dc73e6dd7.mp4
+
 ## Polyglot Requirements
 
 1. .NET 5 - [download it here](https://dotnet.microsoft.com/download)
