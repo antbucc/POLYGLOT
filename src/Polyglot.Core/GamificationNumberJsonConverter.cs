@@ -35,7 +35,7 @@ namespace Polyglot.Core
                             }
                             catch (InvalidOperationException e)
                             {
-                                result = (int)float.Parse(reader.GetString());
+                                result = (int)float.Parse(reader.GetString(), CultureInfo.InvariantCulture);
                             }
                             return (T)(object)result;
                         }
@@ -48,7 +48,7 @@ namespace Polyglot.Core
                             }
                             catch (InvalidOperationException e)
                             {
-                                result = double.Parse(reader.GetString());
+                                result = double.Parse(reader.GetString(), CultureInfo.InvariantCulture);
                             }
                             return (T)(object)result;
                         }
@@ -61,7 +61,7 @@ namespace Polyglot.Core
                             }
                             catch (InvalidOperationException e)
                             {
-                                result = float.Parse(reader.GetString());
+                                result = float.Parse(reader.GetString(), CultureInfo.InvariantCulture);
                             }
                             return (T)(object)result;
                         }

@@ -6,7 +6,13 @@ using System.Linq;
 
 namespace Polyglot.CSharp
 {
-    public record CodeString(string Value, StringSpan Span);
+    public record CodeString(string Value, StringSpan Span)
+    {
+        public virtual bool Equals(CodeString other)
+        {
+            return new CodeStringComparer().Equals(this, other);
+        }
+    }
 
     public record ClassStructure(CodeString Name, DeclarationContextKind Kind, IEnumerable<CodeString> Modifiers, IEnumerable<FieldStructure> Fields, IEnumerable<PropertyStructure> Properties, IEnumerable<MethodStructure> Methods, IEnumerable<ConstructorStructure> Constructors, IEnumerable<ClassStructure> NestedClasses)
     {
@@ -75,7 +81,18 @@ namespace Polyglot.CSharp
     }
 
 
+    internal class CodeStringComparer : IEqualityComparer<CodeString>
+    {
+        public bool Equals(CodeString x, CodeString y)
+        {
+            return x.Value == y.Value;
+        }
 
+        public int GetHashCode([DisallowNull] CodeString obj)
+        {
+            throw new NotImplementedException();
+        }
+    }
     internal class ClassStructureComparer : IEqualityComparer<ClassStructure>
     {
         public bool Equals(ClassStructure x, ClassStructure y)
