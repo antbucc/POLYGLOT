@@ -65,7 +65,7 @@ namespace SysML.Interactive
             var svg = new SysMLSvg(svgText);
 
             context.Display(svg, HtmlFormatter.MimeType);
-            context.Publish(new ReturnValueProduced(result, submitCode));
+            context.Publish(new ReturnValueProduced(result, submitCode, FormattedValue.FromObject(result)));
         }
 
         private void EnsureSysMLKernelServerIsRunning()
@@ -161,8 +161,9 @@ namespace SysML.Interactive
 
             Formatter.Register<SysMLInteractiveResult>((value, writer) =>
             {
-                writer.Write($"done with {value.Warnings?.Count()} warnings.");
-            }, PlainTextFormatter.MimeType);
+                var html = div(new HtmlString($"done with {value.Warnings?.Count()} warnings."));
+                writer.Write(html);
+            }, HtmlFormatter.MimeType);
         }
     }
 }
