@@ -10,8 +10,11 @@ https://user-images.githubusercontent.com/41111850/126748859-a05237a1-e0fd-4467-
 
 ## Polyglot Requirements
 
-1. .NET 5 - [download it here](https://dotnet.microsoft.com/download)
-2. .NET Interactive Notebooks extension for Visual Studio Code
+you can use the [.NET Learning pack](https://dotnet.microsoft.com/learntocode) or follow these steps
+
+1. [Visual Studio Code](https://code.visualstudio.com/Download)
+1. [.NET 5 SDK](https://dotnet.microsoft.com/download)
+2. [.NET Interactive Notebooks extension for Visual Studio Code](https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.dotnet-interactive-vscode)
 
 ## SysML Kernel requirements
 
