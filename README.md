@@ -48,3 +48,4 @@ await kernelExtension.OnLoadAsync(root);
 
 For any information, you can contact us by writing an email to bucchiarone@fbk.eu
 
+![Visitor Count](https://profile-counter.glitch.me/{antbucc}/count.svg)
