@@ -42,3 +42,5 @@ you can use the [.NET Learning pack](https://dotnet.microsoft.com/learntocode) o
 - **Tommaso Martorella** - Microsoft Learn Student Ambassador
 
 For any information, you can contact us by writing an email to bucchiarone@fbk.eu
+
+![Visitor Count](https://profile-counter.glitch.me/{antbucc}/count.svg)
