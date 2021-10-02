@@ -10,6 +10,8 @@ namespace Polyglot.CSharp
     {
         public virtual bool Equals(CodeString other)
         {
+            _ = other ?? throw new ArgumentNullException(nameof(other));
+
             return new CodeStringComparer().Equals(this, other);
         }
     }
@@ -99,7 +101,7 @@ namespace Polyglot.CSharp
         {
             return x.Name == y.Name
                 && x.Kind == y.Kind
-                && x.Modifiers.SequenceEqual(y.Modifiers)
+                && x.Modifiers.SequenceEqual(y.Modifiers, new CodeStringComparer())
                 && x.Fields.SequenceEqual(y.Fields, new FieldStructureComparer())
                 && x.Properties.SequenceEqual(y.Properties, new PropertyStructureComparer())
                 && x.Methods.SequenceEqual(y.Methods, new MethodStructureComparer())

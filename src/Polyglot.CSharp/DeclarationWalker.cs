@@ -9,7 +9,7 @@ namespace Polyglot.CSharp
 {
     public enum DeclarationContextKind { Root, TopLevel, Type, Method };
 
-    public static class CSharpSyntaxHelper
+    internal static class CSharpSyntaxHelper
     {
         public static CodeString ToCodeString(this SyntaxToken t) => new(t.ValueText, new(t.Span.Start, t.Span.End));
 

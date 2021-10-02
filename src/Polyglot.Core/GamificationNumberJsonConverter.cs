@@ -1,22 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
-using System.Reflection;
-using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 
 namespace Polyglot.Core
 {
-    class GamificationFloatJsonConverter : JsonConverter<float>
-    {
-        public override float Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) => Single.Parse(reader.GetString());
-
-        public override void Write(Utf8JsonWriter writer, float value, JsonSerializerOptions options) => writer.WriteStringValue(value.ToString("0.0#", CultureInfo.InvariantCulture));
-    }
-
     public class NumberFloatJsonConverterFactory : JsonConverterFactory
     {
         private class NumberConverter<T> : JsonConverter<T>
@@ -33,7 +21,7 @@ namespace Polyglot.Core
                             {
                                 result = reader.GetInt32();
                             }
-                            catch (InvalidOperationException e)
+                            catch (InvalidOperationException)
                             {
                                 result = (int)float.Parse(reader.GetString(), CultureInfo.InvariantCulture);
                             }
@@ -46,7 +34,7 @@ namespace Polyglot.Core
                             {
                                 result = reader.GetDouble();
                             }
-                            catch (InvalidOperationException e)
+                            catch (InvalidOperationException)
                             {
                                 result = double.Parse(reader.GetString(), CultureInfo.InvariantCulture);
                             }
@@ -59,7 +47,7 @@ namespace Polyglot.Core
                             {
                                 result = reader.GetInt32();
                             }
-                            catch (InvalidOperationException e)
+                            catch (InvalidOperationException)
                             {
                                 result = float.Parse(reader.GetString(), CultureInfo.InvariantCulture);
                             }

@@ -1,28 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Security.Authentication;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.DotNet.Interactive;
-using Microsoft.DotNet.Interactive.Commands;
-using Microsoft.DotNet.Interactive.Events;
-using Microsoft.DotNet.Interactive.Formatting;
 
 namespace Polyglot.Core
 {
-    public class GameEngineClient
+    public class GamificationClient
     {
-        public static GameEngineClient Current { get; set; }
+        public static GamificationClient Current { get; private set; }
         private GameStatus _gameStatus;
         private readonly HttpClient _client;
         private DateTime? _lastRun;
         private string _currentLevel = "0";
-        private readonly Dictionary<string, IMetricCalculator> _metrics = new ();
         public string GameId { get; }
         public string UserId { get; }
         public string Password { get; }
@@ -30,7 +24,7 @@ namespace Polyglot.Core
         public Uri ServerUrl { get; }
         public static string DefaultServerUrl { get; } = "http://139.177.202.145:9090/";
 
-        private GameEngineClient(string gameId, string userId, string password, string playerId, string serverUrl,
+        private GamificationClient(string gameId, string userId, string password, string playerId, string serverUrl,
             HttpClient httpClient)
         {
             if (string.IsNullOrWhiteSpace(gameId))
@@ -70,78 +64,37 @@ namespace Polyglot.Core
         public static void Configure(string gameId, string userId, string password, string playerId,
             string serverUrl = null, Func<HttpClient> clientFactory = null)
         {
-            Current = new GameEngineClient(gameId, userId, password, playerId,
+            Current = new GamificationClient(gameId, userId, password, playerId,
                 string.IsNullOrWhiteSpace(serverUrl) ? DefaultServerUrl : serverUrl, clientFactory?.Invoke() ?? new HttpClient());
         }
 
-        public void AddMetric(string metricId, IMetricCalculator metric)
+        public async Task<GameStateReport> InvokeGamification(IReadOnlyDictionary<string, object> data)
         {
-            _metrics[metricId] = metric;
-        }
-
-        private Task<string[]> GetMetricsAsync()
-        {
-            return Task.FromResult(new[] { "timeSpent", "warnings", "errors", "newVariables", "newVariablesWithValue", "timeSinceLastAction", "success", "declaredClasses", "declarationsStructure", "topLevelClassesStructureMetric" });
-        }
-
-        public async Task<GameStateReport> SubmitActions(SubmitCode command, Kernel kernel,
-            List<KernelEvent> events, IReadOnlyDictionary<string, object> newVariables, TimeSpan runTime)
-        {
-
             var authenticated = await EnsureAuthentication();
             if(!authenticated)
             {
-                var errorString = "Authentication Error";
-                ImmutableArray<FormattedValue> formattedValues = ImmutableArray.Create(new FormattedValue(PlainTextFormatter.MimeType, errorString));
-
-                KernelInvocationContext.Current?.Publish(new ErrorProduced(errorString,
-                    KernelInvocationContext.Current?.Command, formattedValues));
-
-                return null;
+                throw new AuthenticationException("Failed authentication with the credentials provided.");
             }
 
             var callUrl = new Uri(ServerUrl, "api/submit-code");
-
-            // find required metrics for current stage
-            var metrics = await GetMetricsAsync();
-
-            var data = new Dictionary<string, object>();
-
-            // compile data using the values calculated for the required metrics
-            foreach (var metric in metrics)
-            {
-                if (_metrics.TryGetValue(metric, out var metricCalculator))
-                {
-                    data[metric] =
-                        await metricCalculator.CalculateAsync(command, kernel, events, newVariables, runTime, _lastRun);
-                }
-                else
-                {
-                    data[metric] = "not found";
-                }
-            }
 
             var bodyObject = new
             {
                 gameId = GameId,
                 playerId = PlayerId,
                 exerciseNumber = _currentLevel,
-                data = data
+                lastRun = _lastRun,
+                data
             };
 
             var response = await _client.PostAsync(callUrl, bodyObject.ToBody());
+            _lastRun = DateTime.Now;
+            
             if (response.StatusCode != HttpStatusCode.OK)
             {
-                ImmutableArray<FormattedValue> formattedValues = ImmutableArray.Create(new FormattedValue(PlainTextFormatter.MimeType, response.ReasonPhrase));
-            
-                KernelInvocationContext.Current?.Publish(new ErrorProduced(response.ReasonPhrase,
-                    KernelInvocationContext.Current?.Command, formattedValues));
-
-                _lastRun = DateTime.Now;
                 return null;
             }
 
-            _lastRun = DateTime.Now;
             return await GetGameStateReportFromResponseAsync(response);
         }
 
@@ -155,8 +108,6 @@ namespace Polyglot.Core
                 { "username", UserId },
                 { "password", Password }
             };
-
-            //JwtSecurityTokenHandler;
 
             // login authentication token
             _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", "NjRiMDRkZDgtY2Y0Zi00MzU2LTk1OGItNzY1ZTNkOGY0MzM4OnBvbHlnbG90");
@@ -220,6 +171,7 @@ namespace Polyglot.Core
 
         public static void Reset()
         {
+            Current._client.Dispose();
             Current = null;
         }
     }

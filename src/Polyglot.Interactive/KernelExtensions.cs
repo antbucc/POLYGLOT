@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 
 using Microsoft.DotNet.Interactive;
 using Polyglot.Core;
-using Polyglot.CSharp;
 
 namespace Polyglot.Interactive
 {
@@ -27,7 +26,7 @@ namespace Polyglot.Interactive
                 {
                     Handler = CommandHandler.Create<KernelInvocationContext>(async context =>
                     {
-                        var status = await GameEngineClient.Current.GetReportAsync();
+                        var status = await GamificationClient.Current.GetReportAsync();
                         context.Display(status);
                     })
 
@@ -63,19 +62,7 @@ namespace Polyglot.Interactive
                     Handler = CommandHandler.Create<string, string,string, string, string, KernelInvocationContext>((gameId, userId, password, playerId, serverUrl, context) =>
                        {
 
-                           GameEngineClient.Configure(gameId, userId, password, playerId, serverUrl, factory);
-
-                           GameEngineClient.Current.AddMetric("timeSpent", new TimeSpentMetric());
-                           GameEngineClient.Current.AddMetric("timeSinceLastAction", new TimeSinceLastActionMetric());
-                           GameEngineClient.Current.AddMetric("success", new SuccessMetric());
-                           GameEngineClient.Current.AddMetric("warnings", new WarningsMetric());
-                           GameEngineClient.Current.AddMetric("errors", new ErrorsMetric());
-                           GameEngineClient.Current.AddMetric("newVariables", new NewVariablesMetric());
-                           GameEngineClient.Current.AddMetric("newVariablesWithValue", new NewVariablesWithValueMetric());
-                           GameEngineClient.Current.AddMetric("declaredClasses", new DeclaredClassesMetric());
-                           GameEngineClient.Current.AddMetric("declarationsStructure", new DeclarationsStructureMetric());
-                           GameEngineClient.Current.AddMetric("topLevelClassesStructureMetric", new TopLevelClassesStructureMetric());
-
+                           GamificationClient.Configure(gameId, userId, password, playerId, serverUrl, factory);
 
                            context?.Display(
                                @"Game Engine configuration is now complete.",

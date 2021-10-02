@@ -1,38 +1,34 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.DotNet.Interactive;
-using Microsoft.DotNet.Interactive.Commands;
-using Microsoft.DotNet.Interactive.Events;
-using Polyglot.Core;
 
 namespace Polyglot.CSharp
 {
-    public class DeclaredClassesMetric :  IMetricCalculator
+    public class DeclaredClassesMetric
     {
         private readonly CSharpParseOptions _parserOptions;
-        public string Name { get; } = "declaredClasses";
+        public string Name => "declaredClasses";
 
-        public DeclaredClassesMetric()
+        public DeclaredClassesMetric(SourceCodeKind sourceCodeKind = SourceCodeKind.Script)
         {
-           _parserOptions = CSharpParseOptions.Default.WithKind(SourceCodeKind.Script);
+           _parserOptions = CSharpParseOptions.Default.WithKind(sourceCodeKind);
         }
 
-        public Task<object> CalculateAsync(SubmitCode command, Kernel kernel = null, List<KernelEvent> events = null,
-            IReadOnlyDictionary<string, object> newVariables = null, TimeSpan runTime = default, DateTime? lastRun = null)
+        public object Calculate(string code)
         {
-            var tree =
-                CSharpSyntaxTree.ParseText(command.Code, _parserOptions);
-
+            var tree = CSharpSyntaxTree.ParseText(code, _parserOptions);
             var walkerTexasRanger = new ClassDeclarationWalker();
 
             walkerTexasRanger.Visit(tree.GetRoot());
-            
-            return Task.FromResult<object>(walkerTexasRanger.DeclaredClasses.ToArray());
+            return walkerTexasRanger.DeclaredClasses.ToArray();
+        }
+
+        public Task<object> CalculateAsync(string code)
+        {
+            return Task.FromResult<object>(Calculate(code));
         }
 
         private class ClassDeclarationWalker : CSharpSyntaxWalker

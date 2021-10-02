@@ -12,7 +12,6 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.DotNet.Interactive" Version="1.0.0-beta.21357.1" />
-    <PackageReference Include="Microsoft.DotNet.Interactive.CSharp" Version="1.0.0-beta.21357.1" />
   </ItemGroup>
 
   <ItemGroup>
@@ -20,8 +19,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Polyglot.Core\Polyglot.Core.csproj" />
-    <ProjectReference Include="..\Polyglot.CSharp\Polyglot.CSharp.csproj" />
+    <ProjectReference Include="..\Polyglot.Core\Polyglot.Gamification.csproj" />
+    <ProjectReference Include="..\Polyglot.CSharp\Polyglot.Metrics.CSharp.csproj" />
   </ItemGroup>
 
 </Project>

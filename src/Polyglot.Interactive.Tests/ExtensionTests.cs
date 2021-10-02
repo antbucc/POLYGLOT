@@ -53,14 +53,14 @@ namespace Polyglot.Interactive.Tests
             await extension.OnLoadAsync(kernel);
 
 
-            GameEngineClient.Current.Should().BeNull();
+            GamificationClient.Current.Should().BeNull();
             var result = await kernel.SendAsync(new SubmitCode("#!start-game --player-id testPlayerOne --user-id papyrus --game-id 603fced708813b0001baa2cc --password papyrus0704!"), CancellationToken.None);
             result.KernelEvents
                 .ToSubscribedList()
                 .Should()
                 .NotContainErrors();
 
-            GameEngineClient.Current.Should().NotBeNull();
+            GamificationClient.Current.Should().NotBeNull();
         }
 
         [Fact]
@@ -128,7 +128,7 @@ namespace Polyglot.Interactive.Tests
 
             await kernel.SendAsync(new SubmitCode("not valid at all"), CancellationToken.None);
 
-            var report = await GameEngineClient.Current.GetReportAsync();
+            var report = await GamificationClient.Current.GetReportAsync();
 
             report.AssignmentPoints.Should().Be(0);
         }
@@ -146,7 +146,7 @@ namespace Polyglot.Interactive.Tests
 var a = 12;
 a"), CancellationToken.None);
 
-            var report = await GameEngineClient.Current.GetReportAsync();
+            var report = await GamificationClient.Current.GetReportAsync();
 
             report.AssignmentPoints.Should().Be(0);
         }
@@ -180,7 +180,7 @@ class MyCode {
 
 MyCode.DoIt();"), CancellationToken.None);
 
-            var report = await GameEngineClient.Current.GetReportAsync();
+            var report = await GamificationClient.Current.GetReportAsync();
 
             report.AssignmentPoints.Should().Be(0);
         }
@@ -206,7 +206,7 @@ MyCode.DoIt();"), CancellationToken.None);
 
             await kernel.SendAsync(new SubmitCode($"#!start-game --player-id {playerId} --user-id papyrus --game-id {gameId} --password papyrus0704!"), CancellationToken.None);
 
-            var report = await GameEngineClient.Current.GetReportAsync();
+            var report = await GamificationClient.Current.GetReportAsync();
 
             report.CurrentLevel.Should().Be("0");
             report.AssignmentPoints.Should().Be(0);
@@ -215,7 +215,7 @@ MyCode.DoIt();"), CancellationToken.None);
 public class Triangle {}                
 "), CancellationToken.None);
 
-            report = await GameEngineClient.Current.GetReportAsync();
+            report = await GamificationClient.Current.GetReportAsync();
 
             report.CurrentLevel.Should().Be("1");
             report.AssignmentPoints.Should().Be(10);
@@ -227,7 +227,7 @@ public class Triangle
     private float _height;
 }"), CancellationToken.None);
 
-            report = await GameEngineClient.Current.GetReportAsync();
+            report = await GamificationClient.Current.GetReportAsync();
 
             report.CurrentLevel.Should().Be("2");
             report.AssignmentPoints.Should().Be(20);
@@ -245,7 +245,7 @@ public class Triangle
     }
 }"), CancellationToken.None);
 
-            report = await GameEngineClient.Current.GetReportAsync();
+            report = await GamificationClient.Current.GetReportAsync();
 
             report.CurrentLevel.Should().Be("3");
             report.AssignmentPoints.Should().Be(30);
@@ -268,7 +268,7 @@ public class Triangle
     }
 }"), CancellationToken.None);
 
-            report = await GameEngineClient.Current.GetReportAsync();
+            report = await GamificationClient.Current.GetReportAsync();
 
             report.CurrentLevel.Should().Be("4");
             report.AssignmentPoints.Should().Be(40);
@@ -283,7 +283,7 @@ public class Triangle
 
             await kernel.SendAsync(new SubmitCode("#!start-game --player-id player17 --user-id papyrus --game-id 603fced708813b0001baa2cc --password papyrus0704!"), CancellationToken.None);
 
-            var report = await GameEngineClient.Current.GetReportAsync();
+            var report = await GamificationClient.Current.GetReportAsync();
 
             report.CurrentLevel.Should().Be("0");
             report.AssignmentPoints.Should().Be(0);
@@ -292,7 +292,7 @@ public class Triangle
 public class Triangle {}                
 "), CancellationToken.None);
 
-            report = await GameEngineClient.Current.GetReportAsync();
+            report = await GamificationClient.Current.GetReportAsync();
 
             report.CurrentLevel.Should().Be("1");
             report.AssignmentPoints.Should().Be(10);
@@ -305,7 +305,7 @@ public class Triangle
     private float _height;
 }"), CancellationToken.None);
 
-            report = await GameEngineClient.Current.GetReportAsync();
+            report = await GamificationClient.Current.GetReportAsync();
 
             report.CurrentLevel.Should().Be("2");
             report.AssignmentPoints.Should().Be(20);
@@ -324,7 +324,7 @@ public class Triangle
     }
 }"), CancellationToken.None);
 
-            report = await GameEngineClient.Current.GetReportAsync();
+            report = await GamificationClient.Current.GetReportAsync();
 
             report.CurrentLevel.Should().Be("3");
             report.AssignmentPoints.Should().Be(25);
@@ -348,7 +348,7 @@ public class Triangle
     }
 }"), CancellationToken.None);
 
-            report = await GameEngineClient.Current.GetReportAsync();
+            report = await GamificationClient.Current.GetReportAsync();
 
             report.CurrentLevel.Should().Be("4");
             report.AssignmentPoints.Should().Be(30);

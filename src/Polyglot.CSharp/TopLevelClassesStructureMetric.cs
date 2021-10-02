@@ -1,40 +1,33 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.DotNet.Interactive;
-using Microsoft.DotNet.Interactive.Commands;
-using Microsoft.DotNet.Interactive.Events;
-using Polyglot.Core;
 
 namespace Polyglot.CSharp
 {
-    public class TopLevelClassesStructureMetric : IMetricCalculator
+    public class TopLevelClassesStructureMetric
     {
         private readonly CSharpParseOptions _parserOptions;
         public string Name => "topLevelClassesStructureMetric";
 
-        public TopLevelClassesStructureMetric()
+        public TopLevelClassesStructureMetric(SourceCodeKind sourceCodeKind = SourceCodeKind.Script)
         {
-            _parserOptions = CSharpParseOptions.Default.WithKind(SourceCodeKind.Script);
+            _parserOptions = CSharpParseOptions.Default.WithKind(sourceCodeKind);
         }
 
-        public Task<object> CalculateAsync(SubmitCode command, Kernel kernel = null, List<KernelEvent> events = null, IReadOnlyDictionary<string, object> newVariables = null, TimeSpan runTime = default, DateTime? lastRun = null)
+        public object Calculate(string code)
         {
-            var tree =
-                CSharpSyntaxTree.ParseText(command.Code, _parserOptions);
-
-            //var declarationWalker = new ClassWalker();
+            var tree = CSharpSyntaxTree.ParseText(code, _parserOptions);
             var declarationWalker = new DeclarationWalker();
 
             declarationWalker.Visit(tree.GetRoot());
-
             var root = declarationWalker.DeclarationsRoot;
+            return new List<ClassStructure>(root.NestedClasses);
+        }
 
-            var result = new List<ClassStructure>(root.NestedClasses);
-
-            return Task.FromResult<object>(result);
+        public Task<object> CalculateAsync(string code)
+        {
+            return Task.FromResult<object>(Calculate(code));
         }
     }
 }
