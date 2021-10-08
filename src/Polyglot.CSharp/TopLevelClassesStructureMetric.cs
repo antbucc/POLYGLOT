@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
-namespace Polyglot.CSharp
+namespace Polyglot.Metrics.CSharp
 {
     public class TopLevelClassesStructureMetric
     {
@@ -15,7 +15,7 @@ namespace Polyglot.CSharp
             _parserOptions = CSharpParseOptions.Default.WithKind(sourceCodeKind);
         }
 
-        public object Calculate(string code)
+        public List<ClassStructure> Calculate(string code)
         {
             var tree = CSharpSyntaxTree.ParseText(code, _parserOptions);
             var declarationWalker = new DeclarationWalker();
@@ -25,9 +25,9 @@ namespace Polyglot.CSharp
             return new List<ClassStructure>(root.NestedClasses);
         }
 
-        public Task<object> CalculateAsync(string code)
+        public Task<List<ClassStructure>> CalculateAsync(string code)
         {
-            return Task.FromResult<object>(Calculate(code));
+            return Task.FromResult(Calculate(code));
         }
     }
 }

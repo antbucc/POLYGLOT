@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using Microsoft.DotNet.Interactive;
 using Microsoft.DotNet.Interactive.Formatting;
-using Polyglot.Core;
+using Polyglot.Gamification;
 
 using static Microsoft.DotNet.Interactive.Formatting.PocketViewTags;
 

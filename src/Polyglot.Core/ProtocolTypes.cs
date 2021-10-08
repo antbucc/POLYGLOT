@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace Polyglot.Core
+namespace Polyglot.Gamification
 {
     public record PointConcept(string Id, string Name, double Score);
 

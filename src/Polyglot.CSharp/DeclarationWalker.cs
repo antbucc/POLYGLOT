@@ -3,9 +3,9 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Polyglot.Core;
+using Polyglot.Gamification;
 
-namespace Polyglot.CSharp
+namespace Polyglot.Metrics.CSharp
 {
     public enum DeclarationContextKind { Root, TopLevel, Type, Method };
 

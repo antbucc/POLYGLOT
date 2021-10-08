@@ -3,9 +3,8 @@ using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.Net.Http;
 using System.Threading.Tasks;
-
 using Microsoft.DotNet.Interactive;
-using Polyglot.Core;
+using Polyglot.Gamification;
 
 namespace Polyglot.Interactive
 {

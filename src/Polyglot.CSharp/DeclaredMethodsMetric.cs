@@ -5,7 +5,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Polyglot.CSharp
+namespace Polyglot.Metrics.CSharp
 {
     public class DeclaredMethodsMetric
     {
@@ -18,18 +18,18 @@ namespace Polyglot.CSharp
             _parserOptions = CSharpParseOptions.Default.WithKind(sourceCodeKind);
         }
 
-        public object Calculate(string code)
+        public string[] Calculate(string code)
         {
             var tree = CSharpSyntaxTree.ParseText(code, _parserOptions);
             var methodWalker = new MethodDeclarationWalker();
 
             methodWalker.Visit(tree.GetRoot());
-            return Task.FromResult<object>(methodWalker.DeclaredMethods.ToArray());
+            return methodWalker.DeclaredMethods.ToArray();
         }
 
-        public Task<object> CalculateAsync(string code)
+        public Task<string[]> CalculateAsync(string code)
         {
-            return Task.FromResult<object>(Calculate(code));
+            return Task.FromResult(Calculate(code));
         }
 
         private class MethodDeclarationWalker : CSharpSyntaxWalker

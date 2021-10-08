@@ -8,7 +8,7 @@ using System.Security.Authentication;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Polyglot.Core
+namespace Polyglot.Gamification
 {
     public class GamificationClient
     {

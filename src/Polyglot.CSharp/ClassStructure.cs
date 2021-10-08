@@ -1,19 +1,22 @@
-﻿using Polyglot.Core;
+﻿using Polyglot.Gamification;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
-namespace Polyglot.CSharp
+namespace Polyglot.Metrics.CSharp
 {
     public record CodeString(string Value, StringSpan Span)
     {
         public virtual bool Equals(CodeString other)
         {
-            _ = other ?? throw new ArgumentNullException(nameof(other));
-
             return new CodeStringComparer().Equals(this, other);
         }
+
+        public static bool operator ==(CodeString a, string b) => a.Value == b;
+        public static bool operator ==(string a, CodeString b) => b == a;
+        public static bool operator !=(CodeString a, string b) => !(a == b);
+        public static bool operator !=(string a, CodeString b) => !(b == a);
     }
 
     public record ClassStructure(CodeString Name, DeclarationContextKind Kind, IEnumerable<CodeString> Modifiers, IEnumerable<FieldStructure> Fields, IEnumerable<PropertyStructure> Properties, IEnumerable<MethodStructure> Methods, IEnumerable<ConstructorStructure> Constructors, IEnumerable<ClassStructure> NestedClasses)
