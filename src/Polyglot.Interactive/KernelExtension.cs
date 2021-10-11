@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.DotNet.Interactive;
 using Microsoft.DotNet.Interactive.Formatting;
 using Polyglot.Gamification;
-
+using SysML.Interactive;
 using static Microsoft.DotNet.Interactive.Formatting.PocketViewTags;
 
 namespace Polyglot.Interactive
@@ -12,11 +12,13 @@ namespace Polyglot.Interactive
     {
         public Task OnLoadAsync(Kernel kernel)
         {
-            return RegisterFormatters();
+            (Kernel.Root as CompositeKernel).UseSysML();
+            return RegisterFormattersAsync();
         }
 
-        private Task RegisterFormatters()
+        private Task RegisterFormattersAsync()
         {
+            SysMLKernelExtension.RegisterFormatters();
             Formatter.Register<GameStateReport>((report, writer) =>
             {
                 var scoreEmoji= (int)report.AssignmentPoints switch

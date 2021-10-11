@@ -21,6 +21,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Polyglot.Core\Polyglot.Gamification.csproj" />
     <ProjectReference Include="..\Polyglot.CSharp\Polyglot.Metrics.CSharp.csproj" />
+    <ProjectReference Include="..\SysML.Interactive\SysML.Interactive.csproj" />
   </ItemGroup>
 
 </Project>

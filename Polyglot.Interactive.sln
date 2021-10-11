@@ -4,6 +4,10 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 16.0.31015.32
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Polyglot.Interactive", "src\Polyglot.Interactive\Polyglot.Interactive.csproj", "{A5D6365C-36D6-47CF-AA92-AF6803BC2B43}"
+	ProjectSection(ProjectDependencies) = postProject
+		{78AAF701-C902-4EC1-BE0A-5031AB61BCEA} = {78AAF701-C902-4EC1-BE0A-5031AB61BCEA}
+		{AF9E11AA-F6F4-4AB4-8C5D-965513145832} = {AF9E11AA-F6F4-4AB4-8C5D-965513145832}
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{60F5A349-C043-414A-BF31-91B5F9F59D0D}"
 EndProject
@@ -12,6 +16,13 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Polyglot.Gamification", "src\Polyglot.Core\Polyglot.Gamification.csproj", "{CC362B37-2802-4782-97B3-0FB9331E23C6}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Polyglot.Metrics.CSharp", "src\Polyglot.CSharp\Polyglot.Metrics.CSharp.csproj", "{6FEBD120-5288-4A0D-A9C7-1693977D41E3}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Polyglot.Metrics.SysML", "src\Polyglot.SysML\Polyglot.Metrics.SysML.csproj", "{AF9E11AA-F6F4-4AB4-8C5D-965513145832}"
+	ProjectSection(ProjectDependencies) = postProject
+		{CC362B37-2802-4782-97B3-0FB9331E23C6} = {CC362B37-2802-4782-97B3-0FB9331E23C6}
+	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SysML.Interactive", "src\SysML.Interactive\SysML.Interactive.csproj", "{78AAF701-C902-4EC1-BE0A-5031AB61BCEA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -35,6 +46,14 @@ Global
 		{6FEBD120-5288-4A0D-A9C7-1693977D41E3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6FEBD120-5288-4A0D-A9C7-1693977D41E3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6FEBD120-5288-4A0D-A9C7-1693977D41E3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AF9E11AA-F6F4-4AB4-8C5D-965513145832}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AF9E11AA-F6F4-4AB4-8C5D-965513145832}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AF9E11AA-F6F4-4AB4-8C5D-965513145832}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AF9E11AA-F6F4-4AB4-8C5D-965513145832}.Release|Any CPU.Build.0 = Release|Any CPU
+		{78AAF701-C902-4EC1-BE0A-5031AB61BCEA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{78AAF701-C902-4EC1-BE0A-5031AB61BCEA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{78AAF701-C902-4EC1-BE0A-5031AB61BCEA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{78AAF701-C902-4EC1-BE0A-5031AB61BCEA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
