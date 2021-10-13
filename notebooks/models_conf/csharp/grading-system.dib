@@ -1,0 +1,498 @@
+#!markdown
+
+# [Challenge] BooleanCourse
+
+#!csharp
+
+#r "nuget: Interactive.Journey"
+#r "nuget: Polyglot.Metrics.CSharp"
+
+#!csharp
+
+using Microsoft.DotNet.Interactive.Journey;
+using Polyglot.Metrics.CSharp;
+using System.Reflection;
+
+#!csharp
+
+bool AssertVariableNameAndTypeOrFail(   IEnumerable<VariableStructure> vars,
+                                        string name, string nameFeedback,
+                                        string type, string typeFeedback,
+                                        RuleContext context)
+{
+    var @var = vars?.Where(v => v.Name == name)?.FirstOrDefault();
+    if(@var is null)
+    {
+        context.Fail(nameFeedback);
+        return true;
+    }
+    if (@var.Type != type)
+    {
+        context.Fail(typeFeedback);
+        return true;
+    }
+
+    return false;
+}
+
+#!csharp
+
+bool AssertAccessorAndModifiersOrFail(  IEnumerable<PropertyStructure> properties,
+                                        string name, string nameFeedback,
+                                        string type, string typeFeedback,
+                                        string modifier, string modifierFeedback,
+                                        string accessor, string accessorFeedback,
+                                        RuleContext context)
+{
+    var prop = properties?.Where(p => p.Variable.Name == name)?.FirstOrDefault();
+    if(prop is null)
+    {
+        context.Fail(nameFeedback);
+        return true;
+    }
+
+    if(prop.Variable.Type != type) {
+        context.Fail(typeFeedback);
+        return true;
+    }
+
+    var mod = prop.Modifiers?.FirstOrDefault();
+    if (mod is null || mod != modifier)
+    {
+        mod.Display();
+        context.Fail(modifierFeedback);
+        return true;
+    }
+    
+    var acc = prop.Accessors?.FirstOrDefault();
+    if (acc is null || acc != accessor)
+    {
+        context.Fail(accessorFeedback);
+        return true;
+    }
+
+    return false;
+}
+
+#!csharp
+
+Lesson.CurrentChallenge.AddRule("class has required properties", context =>
+{
+    var classMetric = new TopLevelClassesStructureMetric();
+    var classDeclaration = classMetric.Calculate(context.SubmittedCode) as List<ClassStructure>;
+    var booleanCourseClass = classDeclaration?.Where(c => c.Name.Value == "BooleanCourse")?.FirstOrDefault();
+    
+    if(booleanCourseClass is null)
+    {
+        context.Fail("class 'BooleanCourse' was not declared");
+        return;
+    }
+    
+    var properties = booleanCourseClass?.Properties;
+
+    if(properties is null)
+    {
+        context.Fail("class 'BooleanCourse' has no constructor");
+        return;
+    }
+
+    var requiredProperties = new[] { ("Name", "string", "public", "get"), ("Passed", "bool", "public", "get") };
+    foreach(var (name, type, modifier, accessor) in requiredProperties)
+    {
+        var failed = AssertAccessorAndModifiersOrFail(properties, 
+            name, $"Required property '{name}' is missing",
+            type, $"Property '{name}' should be of type '{type}' only",
+            modifier, $"Property '{name}' should be '{modifier}' only",
+            accessor, $"Property '{name}' should be '{accessor}' only",
+            context);
+        if(failed) return;
+    }
+
+    context.Pass("👍");
+});
+
+#!csharp
+
+Lesson.CurrentChallenge.AddRule("constructor has required parameters", context => 
+{    
+    var classMetric = new TopLevelClassesStructureMetric();
+    var classDeclaration = classMetric.Calculate(context.SubmittedCode) as List<ClassStructure>;
+    var booleanCourseClass = classDeclaration?.Where(c => c.Name.Value == "BooleanCourse")?.FirstOrDefault();
+    
+    if(booleanCourseClass is null)
+    {
+        context.Fail("class 'BooleanCourse' was not declared");
+        return;
+    }
+    
+    var parameters = booleanCourseClass?.Constructors?.FirstOrDefault()?.Parameters;
+
+    if(parameters is null)
+    {
+        context.Fail("class 'BooleanCourse' has no constructor");
+        return;
+    }
+
+    var requiredParameters = new[] { ("name", "string"), ("passed", "bool") };
+    foreach(var (name, type) in requiredParameters)
+    {
+        var failed = AssertVariableNameAndTypeOrFail(parameters, 
+            name, $"Required constructor parameter '{name}' is missing",
+            type, $"Parameter '{name}' is not of type '{type}'",
+            context);
+        if(failed) return;
+    }
+
+    context.Pass("👍");
+});
+
+#!markdown
+
+## [Question]
+
+#!markdown
+
+# Grading system
+The goal of this assignment is to code a system to keep track of the students' grades. 
+
+#!markdown
+
+## Step 1
+
+Let's start with something simple.  
+
+A BooleanCourse encapsulates a course name and a registration of passed/not passed.  
+Use a class with two public properties ```'Name'``` and ```'Passed'```, each one with a getter only.  
+The class also needs a constructor with two parameters ```'name'``` and ```'passed'``` which initializes the two properties.
+
+#!csharp
+
+// in case you don't know the C# syntax for properties, here is an example
+class Test {
+    public int TestInt { get; set; } // the property
+}
+
+#!csharp
+
+// code your BooleanCourse here
+
+#!markdown
+
+## [Scratchpad]
+
+#!csharp
+
+#!model-answer
+// this should pass
+
+class BooleanCourse
+{
+    public string Name { get; }
+    public bool Passed { get; }
+
+    public BooleanCourse(string name, bool passed)
+    {
+        Name = name;
+        Passed = passed;
+    }
+}
+
+#!markdown
+
+# [Challenge] GradedCourse
+
+#!csharp
+
+Lesson.CurrentChallenge.AddRule("class has required properties", context =>
+{
+    var classMetric = new TopLevelClassesStructureMetric();
+    var classDeclaration = classMetric.Calculate(context.SubmittedCode) as List<ClassStructure>;
+    var gradedCourseClass = classDeclaration?.Where(c => c.Name.Value == "GradedCourse")?.FirstOrDefault();
+    
+    if(gradedCourseClass is null)
+    {
+        context.Fail("class 'GradedCourse' was not declared");
+        return;
+    }
+    
+    var properties = gradedCourseClass?.Properties;
+
+    if(properties is null)
+    {
+        context.Fail("class 'GradedCourse' has no constructor");
+        return;
+    }
+
+    var requiredProperties = new[] { ("Name", "string", "public", "get"), ("Grade", "int", "public", "get"), ("Passed", "bool", "public", "get") };
+    foreach(var (name, type, modifier, accessor) in requiredProperties)
+    {
+        var failed = AssertAccessorAndModifiersOrFail(properties, 
+            name, $"Required property '{name}' is missing",
+            type, $"Property '{name}' should be of type '{type}' only",
+            modifier, $"Property '{name}' should be '{modifier}' only",
+            accessor, $"Property '{name}' should be '{accessor}' only",
+            context);
+        if(failed) return;
+    }
+
+    context.Pass("👍");
+});
+
+#!csharp
+
+Lesson.CurrentChallenge.AddRule("constructor has required parameters", context => 
+{    
+    var classMetric = new TopLevelClassesStructureMetric();
+    var classDeclaration = classMetric.Calculate(context.SubmittedCode) as List<ClassStructure>;
+    var gradedCourseClass = classDeclaration?.Where(c => c.Name.Value == "GradedCourse")?.FirstOrDefault();
+    
+    if(gradedCourseClass is null)
+    {
+        context.Fail("class 'GradedCourse' was not declared");
+        return;
+    }
+    
+    var parameters = gradedCourseClass?.Constructors?.FirstOrDefault()?.Parameters;
+
+    if(parameters is null)
+    {
+        context.Fail("class 'GradedCourse' has no constructor");
+        return;
+    }
+
+    var requiredParameters = new[] { ("name", "string"), ("grade", "int") };
+    foreach(var (name, type) in requiredParameters)
+    {
+        var failed = AssertVariableNameAndTypeOrFail(parameters, 
+            name, $"Required constructor parameter '{name}' is missing",
+            type, $"Parameter '{name}' is not of type '{type}'",
+            context);
+        if(failed) return;
+    }
+
+    context.Pass("👍");
+});
+
+#!csharp
+
+Lesson.CurrentChallenge.AddRule("property Passed working as expected", context => 
+{
+    Type type = AppDomain.CurrentDomain.GetAssemblies()
+                                        .SelectMany(x => x.GetTypes())
+                                        .LastOrDefault(x => x.Name == "GradedCourse");
+
+    (dynamic, bool)[] courses = new[]
+    {
+        (Activator.CreateInstance(type, new object[] { "test", 5 }), false),
+        (Activator.CreateInstance(type, new object[] { "test", 6 }), true),
+    };
+    
+    foreach(var (course, expected) in courses)
+    {
+        var actual = course.Passed;
+        if(actual != expected)
+        {
+            context.Fail($"Wrong implementation of property 'Passed'.\n Course: 'new GradedCourse(\"{course.Name}\", {course.Grade})'. Got {actual}, expected {expected}");
+            return;
+        }
+    }
+
+    context.Pass("👍");
+});
+
+#!markdown
+
+## [Question]
+
+#!markdown
+
+## Step 2
+
+Things now are a bit more complicated.  
+
+A GradedCourse encapsulates a course name and a numerical grade from 0 to 10.  
+Use a class with two public properties ```'Name'``` and ```'Grade'```, each one with a getter only.  
+The class also needs a constructor with two parameters ```'name'``` and ```'grade'``` which initializes the two properties.
+
+Someone who uses GradedCourse will also need to know if the student passed the course or not, so the class must expose another property ```Passed``` which uses the grade to determinate if the student has succeeded or failed the class.
+A graded course is passed if grade >= 6
+
+#!csharp
+
+// here is a template you can use to implement the property Passed
+class Test {
+    private int number;
+    public bool IsEven => number % 2 == 0;
+}
+
+#!csharp
+
+// code your GradedCourse here
+
+#!markdown
+
+## [Scratchpad]
+
+#!csharp
+
+#!model-answer
+// this should pass
+
+class GradedCourse
+{
+    public string Name { get; }
+    public int Grade { get; }
+    public bool Passed => Grade >= 6;
+
+    public GradedCourse(string name, int grade)
+    {
+        Name = name;
+        Grade = grade;
+    }
+}
+
+#!csharp
+
+#!model-answer
+// this should pass
+
+class GradedCourse
+{
+    public string Name { get; }
+    public int Grade { get; }
+    public bool Passed { get; }
+
+    public GradedCourse(string name, int grade)
+    {
+        Name = name;
+        Grade = grade;
+        Passed = grade >= 6;
+    }
+}
+
+#!markdown
+
+# [Challenge] Project
+
+#!csharp
+
+Lesson.ResetChallenge();
+
+#!csharp
+
+Lesson.CurrentChallenge.AddRule("project Passed() working as expected", context => 
+{
+    var types = AppDomain.CurrentDomain.GetAssemblies()
+                                       .SelectMany(x => x.GetTypes());
+    Type booleanCourseType = types.LastOrDefault(x => x.Name == "BooleanCourse");
+    Type gradedCourseType = types.LastOrDefault(x => x.Name == "GradedCourse");
+    Type projectType = types.LastOrDefault(x => x.Name == "Project");
+
+    dynamic booleanFailingCourse = Activator.CreateInstance(booleanCourseType, new object[] { "test", false });
+    dynamic booleanPassingCourse = Activator.CreateInstance(booleanCourseType, new object[] { "test", true });
+    dynamic gradedFailingCourse = Activator.CreateInstance(gradedCourseType, new object[] { "test", 5 });
+    dynamic gradedPassingCourse = Activator.CreateInstance(gradedCourseType, new object[] { "test", 6 });
+
+    dynamic failingProject1 = Activator.CreateInstance( projectType, new object[] {
+                                                            booleanFailingCourse, booleanFailingCourse,
+                                                            gradedPassingCourse, gradedPassingCourse
+                                                        });
+    dynamic failingProject2 = Activator.CreateInstance( projectType, new object[] {
+                                                            booleanFailingCourse, booleanPassingCourse,
+                                                            gradedFailingCourse, gradedPassingCourse
+                                                        });
+    dynamic failingProject3 = Activator.CreateInstance( projectType, new object[] {
+                                                            booleanPassingCourse, booleanPassingCourse,
+                                                            gradedFailingCourse, gradedFailingCourse
+                                                        });
+    dynamic passingProject1 = Activator.CreateInstance( projectType, new object[] {
+                                                            booleanPassingCourse, booleanFailingCourse,
+                                                            gradedPassingCourse, gradedPassingCourse
+                                                        });
+    dynamic passingProject2 = Activator.CreateInstance( projectType, new object[] {
+                                                            booleanPassingCourse, booleanPassingCourse,
+                                                            gradedFailingCourse, gradedPassingCourse
+                                                        });
+
+    (dynamic, bool)[] courses = new[]
+    {
+        (failingProject1, false),
+        (failingProject2, false),
+        (failingProject3, false),
+        (passingProject1, true),
+        (passingProject2, true)
+    };
+    
+    foreach(var (project, expected) in courses)
+    {
+        var actual = project.Passed();
+        if(actual != expected)
+        {
+            context.Fail($@"Wrong implementation of method 'Passed'.
+                            sas.
+                            sus");
+            return;
+        }
+    }
+
+    context.Pass("👍");
+});
+
+#!markdown
+
+## [Question]
+
+#!markdown
+
+## Step 3
+
+It's time for the final step.  
+
+The school's teaching system uses projects to evaluate students' performance.  
+A project is composed of 4 courses, two of them are boolean courses and the other two are graded courses.  
+The school considers a project passed successfully if 3/4 of its courses are successful.  
+
+You'll be given a class Project with (an empty) method ```Passed``` to check if the student passed the project.
+Implement ```Passed```
+
+#!csharp
+
+class Project {
+    BooleanCourse[] booleanCourses;
+    GradedCourse[] gradedCourses;
+
+    public Project(BooleanCourse firstBoolean, BooleanCourse secondBoolean, GradedCourse firstGraded, GradedCourse secondGraded) {
+        booleanCourses = new[] { firstBoolean, secondBoolean };
+        gradedCourses = new[] { firstGraded, secondGraded };
+    }
+
+    public bool Passed() {
+        throw new NotImplementedException();
+    }
+}
+
+#!markdown
+
+## [Scratchpad]
+
+#!csharp
+
+#!model-answer
+// this should pass
+
+class Project {
+    BooleanCourse[] booleanCourses;
+    GradedCourse[] gradedCourses;
+
+    public Project(BooleanCourse firstBoolean, BooleanCourse secondBoolean, GradedCourse firstGraded, GradedCourse secondGraded) {
+        booleanCourses = new[] { firstBoolean, secondBoolean };
+        gradedCourses = new[] { firstGraded, secondGraded };
+    }
+
+    public bool Passed() {
+        var passed = 0;
+        passed += booleanCourses.Count(x => x.Passed);
+        passed += gradedCourses.Count(x => x.Passed);
+        return passed >= 3;
+    }
+}

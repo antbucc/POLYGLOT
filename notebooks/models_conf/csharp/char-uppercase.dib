@@ -1,0 +1,76 @@
+#!markdown
+
+# [Challenge] CharToUpper
+
+#!csharp
+
+#r "nuget: Interactive.Journey"
+
+#!csharp
+
+using Microsoft.DotNet.Interactive.Journey;
+
+#!csharp
+
+Func<char, char> ToUpper = c => throw new NotImplementedException();
+
+#!csharp
+
+private void EvalRule(IEnumerable<(char, char)> mapping, RuleContext context) {
+    mapping = mapping.Select(pair => (ToUpper(pair.Item1), pair.Item2));
+
+    var hasFailed = false;
+    foreach((char r, char e) in mapping)
+    {
+        if (r != e)
+        {
+            hasFailed = true;
+            context.Fail($"Expected {e}, but got {r}");
+        }
+    }
+
+    if (!hasFailed) {
+        context.Pass("👍");
+    }
+}
+
+#!csharp
+
+Lesson.CurrentChallenge.AddRule("Correcly capitalize lowercase letters", context =>
+    EvalRule(new[] { ('a', 'A'), ('f', 'F'), ('w', 'W') }, context));
+
+#!csharp
+
+Lesson.CurrentChallenge.AddRule("Doesn't change uppercase letters", context =>
+    EvalRule(new[] { ('A', 'A'), ('F', 'F'), ('W', 'W') }, context));
+
+#!csharp
+
+Lesson.CurrentChallenge.AddRule("Correcly handles symbols and digits", context =>
+    EvalRule(new[] { ('3', '3'), ('#', '#'), ('\\', '\\') }, context));
+
+#!markdown
+
+## [Question]
+
+#!markdown
+
+# Complete the following function [ToUpper]
+
+#!csharp
+
+ToUpper = c => 
+{
+    throw new NotImplementedException();
+};
+
+#!markdown
+
+## [Scratchpad]
+
+#!csharp
+
+#!model-answer
+// this should pass
+
+ToUpper = c => c.ToString().ToUpper()[0];

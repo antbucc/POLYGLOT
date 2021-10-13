@@ -1,0 +1,273 @@
+#!markdown
+
+# [Challenge] ItemDefinition
+
+#!csharp
+
+#r "nuget:Polyglot.Interactive"
+#r "nuget:Polyglot.Metrics.SysML"
+#r "nuget: Interactive.Journey"
+using Microsoft.DotNet.Interactive.Journey;
+using Polyglot.Metrics.SysML;
+using SysML.Interactive;
+
+#!csharp
+
+Lesson.ResetChallenge();
+
+#!csharp
+
+string GetKindText(SysMLElementKind kind) {
+    return kind switch {
+        SysMLElementKind.ITEM_USAGE_IN => "item",
+        SysMLElementKind.ITEM_USAGE_OUT => "item",
+        SysMLElementKind.ATTRIBUTE_USAGE => "attribute",
+        SysMLElementKind.PORT_USAGE => "port",
+        _ => "unknown"
+    };
+}
+
+#!csharp
+
+void CodeInPackage(RuleContext context) {
+    var structureMetric = new DefinitionStructureMetric();
+    var package = structureMetric.Calculate(context.EventsProduced.ToList()).FirstOrDefault();
+    
+    if(package is null) {
+        context.Fail("SysML code should be enclosed in a package");
+        return;
+    }
+    if(package.Kind != SysMLElementKind.PACKAGE) {
+        context.Fail("SysML code should be enclosed in a package");
+        return;
+    }
+    if(package.Name != "Items Example") {
+        context.Fail("The package name should be 'Items Example'");
+        return;
+    }
+    
+    context.Pass("👍");
+}
+
+Lesson.CurrentChallenge.AddRule("Code is in a package", context => CodeInPackage(context));
+
+#!csharp
+
+void ItemIsDefined(SysMLElement item, RuleContext context) {
+    var structureMetric = new DefinitionStructureMetric();
+    var package = structureMetric.Calculate(context.EventsProduced.ToList()).FirstOrDefault();
+    
+    if(package is null) {
+        context.Fail("SysML code should be enclosed in a package");
+        return;
+    }
+    var itemDefinition = package?.OwnedElements?.Where(e => e.Kind == SysMLElementKind.ITEM_DEFINITION)
+                                               ?.Where(e => e.Name == item.Name)?.FirstOrDefault();
+    
+    if(itemDefinition is null) {
+        context.Fail($"Item {item.Name} not defined");
+        return;
+    }
+    if(itemDefinition.Type != item.Type) {
+        context.Fail($"Item {item.Name} is of type {itemDefinition.Type}. Should be {item.Type}");
+        return;
+    }
+
+    item.OwnedElements.ToList().ForEach(e => {
+        var owned = itemDefinition.OwnedElements.Where(o => o.Name == e.Name).FirstOrDefault();
+        if(owned is null) {
+            context.Fail($"{e.Name} not found in {item.Name} definition");
+            return;
+        }
+        if(owned.Kind != e.Kind) {
+            var ownerKindText = GetKindText(owned.Kind);
+            var expectedKindText = GetKindText(e.Kind);
+            context.Fail($"{e.Name} is a {ownerKindText}. Should be a {expectedKindText}");
+            return;
+        }
+        if(owned.Type != e.Type) {
+            context.Fail($"{e.Name} has type {owned.Type}. Should be {e.Type}");
+            return;
+        }
+    });
+
+    context.Pass("👍");
+}
+
+Action<RuleContext> ruleFuel = context => 
+{
+    var port = new SysMLElement("Fuel", SysMLElementKind.ITEM_DEFINITION, new List<SysMLElement>(), null);
+    ItemIsDefined(port, context);
+};
+
+Action<RuleContext> rulePerson = context => 
+{
+    var port = new SysMLElement("Person", SysMLElementKind.ITEM_DEFINITION, new List<SysMLElement>(), null);
+    ItemIsDefined(port, context);
+};
+
+Lesson.CurrentChallenge.AddRule("Fuel is defined", ruleFuel);
+Lesson.CurrentChallenge.AddRule("Person is defined", rulePerson);
+
+#!markdown
+
+## [Question]
+
+#!markdown
+
+# Item Definition
+
+#!markdown
+
+## Step 1
+Create a package named ```'Port Example'``` that contains a definition of two items: ```'Fuel'``` and ```'Person'```
+
+#!csharp
+
+#!sysml
+// your code goes here
+
+#!markdown
+
+## [Scratchpad]
+
+#!csharp
+
+#!model-answer
+#!sysml
+package 'Items Example' {	
+	item def Fuel;
+	item def Person;	
+}
+
+#!markdown
+
+# [Challenge] PartDefinition
+
+#!csharp
+
+Lesson.ResetChallenge();
+
+#!csharp
+
+Lesson.CurrentChallenge.AddRule("Step 1 OK", context => 
+{
+    CodeInPackage(context);
+    ruleFuel(context);
+    rulePerson(context);
+});
+
+#!csharp
+
+void PartIsDefined(SysMLElement part, RuleContext context) {
+    var structureMetric = new DefinitionStructureMetric();
+    var package = structureMetric.Calculate(context.EventsProduced.ToList()).FirstOrDefault();
+    
+    if(package is null) {
+        context.Fail("SysML code should be enclosed in a package");
+        return;
+    }
+    var partDefinition = package?.OwnedElements?.Where(e => e.Kind == SysMLElementKind.PART_DEFINITION)
+                                               ?.Where(e => e.Name == part.Name)?.FirstOrDefault();
+    
+    if(partDefinition is null) {
+        context.Fail($"Part {part.Name} not defined");
+        return;
+    }
+    if(partDefinition.Type != part.Type) {
+        context.Fail($"Part {part.Name} is of type {partDefinition.Type}. Should be {part.Type}");
+        return;
+    }
+
+    var failed = false;
+    part.OwnedElements.ToList().ForEach(e => {
+        var owned = partDefinition.OwnedElements.Where(o => o.Name == e.Name).FirstOrDefault();
+        if(owned is null) {
+            context.Fail($"{e.Name} not found in {part.Name} definition");
+            failed = true;
+            return;
+        }
+        if(owned.Kind != e.Kind) {
+            var ownerKindText = GetKindText(owned.Kind);
+            var expectedKindText = GetKindText(e.Kind);
+            context.Fail($"{e.Name} is a {ownerKindText}. Should be a {expectedKindText}");
+            failed = true;
+            return;
+        }
+        if(owned.Type != e.Type) {
+            context.Fail($"{e.Name} has type {owned.Type}. Should be {e.Type}");
+            failed = true;
+            return;
+        }
+    });
+
+    if(!failed) {
+        context.Pass("👍");
+    }
+}
+
+Action<RuleContext> ruleVehicle = context => {
+    var ownedElements = new[]
+    {
+        new SysMLElement("mass", SysMLElementKind.ATTRIBUTE_USAGE, new List<SysMLElement>(), "Real"),
+        new SysMLElement("driver", SysMLElementKind.ITEM_USAGE, new List<SysMLElement>(), "Person"),
+        new SysMLElement("fuelTank", SysMLElementKind.PART_USAGE, new[] {
+            new SysMLElement("fuelTankPort", SysMLElementKind.PORT_USAGE, new List<SysMLElement>(), "FuelOutPort"),
+        }, "Part"),
+    };
+    var port = new SysMLElement("Vehicle", SysMLElementKind.PORT_DEFINITION, ownedElements, null);
+    PartIsDefined(port, context);
+};
+
+Lesson.CurrentChallenge.AddRule("Vehicle is defined", ruleVehicle);
+
+#!markdown
+
+## [Question]
+
+#!markdown
+
+# Part Definition
+
+#!markdown
+
+## Step 2
+You're almost there.
+Define the ```'Vehicle'``` part.  
+```'Vehicle'``` should contain:
+- an attribute ```'mass'``` of type ```'Real'```  
+- an item ```'driver'``` of type ```'Person'```  
+- a part ```'fuelTank'``` that contains an item ```'fuel'``` of type ```'Fuel'```
+
+#!csharp
+
+#!sysml
+// your code goes here
+// remember to import ScalarValues to use the type Real
+
+#!markdown
+
+## [Scratchpad]
+
+#!csharp
+
+#!model-answer
+#!sysml
+// remember to import ScalarValues to use the type Real
+package 'Items Example' {
+	import ScalarValues::*;
+	
+	item def Fuel;
+	item def Person;
+	
+	part def Vehicle {
+		attribute mass : Real;
+		
+		ref item driver : Person;
+
+		part fuelTank {
+			item fuel: Fuel;
+		}
+	}
+	
+}

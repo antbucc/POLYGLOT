@@ -1,0 +1,444 @@
+#!markdown
+
+# [Challenge] AttributeDefinition
+
+#!csharp
+
+#r "nuget:Polyglot.Interactive"
+#r "nuget:Polyglot.Metrics.SysML"
+#r "nuget: Interactive.Journey"
+using Microsoft.DotNet.Interactive.Journey;
+using Polyglot.Metrics.SysML;
+using SysML.Interactive;
+
+#!csharp
+
+Lesson.ResetChallenge();
+
+#!csharp
+
+string GetKindText(SysMLElementKind kind) {
+    return kind switch {
+        SysMLElementKind.ITEM_USAGE_IN => "item",
+        SysMLElementKind.ITEM_USAGE_OUT => "item",
+        SysMLElementKind.ATTRIBUTE_USAGE => "attribute",
+        SysMLElementKind.PORT_USAGE => "port",
+        _ => "unknown"
+    };
+}
+
+#!csharp
+
+void CodeInPackage(RuleContext context) {
+    var structureMetric = new DefinitionStructureMetric();
+    var package = structureMetric.Calculate(context.EventsProduced.ToList()).FirstOrDefault();
+    
+    if(package is null) {
+        context.Fail("SysML code should be enclosed in a package");
+        return;
+    }
+    if(package.Kind != SysMLElementKind.PACKAGE) {
+        context.Fail("SysML code should be enclosed in a package");
+        return;
+    }
+    if(package.Name != "Port Example") {
+        context.Fail("The package name should be 'Port Example'");
+        return;
+    }
+    
+    context.Pass("👍");
+}
+
+Lesson.CurrentChallenge.AddRule("Code is in a package", context => CodeInPackage(context));
+
+#!csharp
+
+void AttributeDefinition(RuleContext context) {
+    var structureMetric = new DefinitionStructureMetric();
+    var package = structureMetric.Calculate(context.EventsProduced.ToList()).FirstOrDefault();
+    
+    if(package is null) {
+        context.Fail("SysML code should be enclosed in a package");
+        return;
+    }
+    var attributeDefinitions = package?.OwnedElements?.Where(e => e.Kind == SysMLElementKind.ATTRIBUTE_DEFINITION);
+    if(attributeDefinitions?.Count() != 1) {
+        context.Fail("The package should contain a single attribute definition");
+        return;
+    }
+    if(attributeDefinitions?.FirstOrDefault()?.Name != "Temp") {
+        context.Fail("The attribute definition should be named 'Temp'");
+        return;
+    }
+    
+    context.Pass("👍");
+}
+
+Lesson.CurrentChallenge.AddRule("Attribute definition", context => AttributeDefinition(context));
+
+#!markdown
+
+## [Question]
+
+#!markdown
+
+# Attribute Definition
+
+#!markdown
+
+## Step 1
+Create a package named ```'Port Example'``` that contains a definition of the ```'Temp'``` attribute
+
+#!csharp
+
+#!sysml
+// your code goes here
+
+#!markdown
+
+## [Scratchpad]
+
+#!csharp
+
+#!model-answer
+#!sysml
+package 'Port Example' {
+	attribute def Temp;
+}
+
+#!markdown
+
+# [Challenge] FuelDefinition
+
+#!csharp
+
+Lesson.ResetChallenge();
+
+#!csharp
+
+Lesson.CurrentChallenge.AddRule("Step 1 OK", context => 
+{
+    CodeInPackage(context);
+    AttributeDefinition(context);
+});
+
+#!csharp
+
+void PartIsDefined(SysMLElement part, RuleContext context) {
+    var structureMetric = new DefinitionStructureMetric();
+    var package = structureMetric.Calculate(context.EventsProduced.ToList()).FirstOrDefault();
+    
+    if(package is null) {
+        context.Fail("SysML code should be enclosed in a package");
+        return;
+    }
+    var partDefinition = package?.OwnedElements?.Where(e => e.Kind == SysMLElementKind.PART_DEFINITION)
+                                               ?.Where(e => e.Name == part.Name)?.FirstOrDefault();
+    
+    if(partDefinition is null) {
+        context.Fail($"Part {part.Name} not defined");
+        return;
+    }
+    if(partDefinition.Type != part.Type) {
+        context.Fail($"Part {part.Name} is of type {partDefinition.Type}. Should be {part.Type}");
+        return;
+    }
+
+    var failed = false;
+    part.OwnedElements.ToList().ForEach(e => {
+        var owned = partDefinition.OwnedElements.Where(o => o.Name == e.Name).FirstOrDefault();
+        if(owned is null) {
+            context.Fail($"{e.Name} not found in {part.Name} definition");
+            failed = true;
+            return;
+        }
+        if(owned.Kind != e.Kind) {
+            var ownerKindText = GetKindText(owned.Kind);
+            var expectedKindText = GetKindText(e.Kind);
+            context.Fail($"{e.Name} is a {ownerKindText}. Should be a {expectedKindText}");
+            failed = true;
+            return;
+        }
+        if(owned.Type != e.Type) {
+            context.Fail($"{e.Name} has type {owned.Type}. Should be {e.Type}");
+            failed = true;
+            return;
+        }
+    });
+
+    if(!failed) {
+        context.Pass("👍");
+    }
+}
+
+Action<RuleContext> ruleFuel = context => {
+    var part = new SysMLElement("Fuel", SysMLElementKind.PART_DEFINITION, new List<SysMLElement>(), null);
+    PartIsDefined(part, context);
+};
+
+Lesson.CurrentChallenge.AddRule("Fuel is defined", ruleFuel);
+
+#!markdown
+
+## [Question]
+
+#!markdown
+
+# Fuel Definition
+
+#!markdown
+
+## Step 2
+Add a part definition ```'Fuel'``` to your model
+
+#!csharp
+
+#!sysml
+// your code goes here
+
+#!markdown
+
+## [Scratchpad]
+
+#!csharp
+
+#!model-answer
+#!sysml
+package 'Port Example' {
+	attribute def Temp;
+	part def Fuel;
+}
+
+#!markdown
+
+# [Challenge] PortDefinition
+
+#!csharp
+
+Lesson.ResetChallenge();
+
+#!csharp
+
+Lesson.CurrentChallenge.AddRule("Step 2 OK", context => 
+{
+    CodeInPackage(context);
+    AttributeDefinition(context);
+    ruleFuel(context);
+});
+
+#!csharp
+
+void PortIsDefined(SysMLElement port, RuleContext context) {
+    var structureMetric = new DefinitionStructureMetric();
+    var package = structureMetric.Calculate(context.EventsProduced.ToList()).FirstOrDefault();
+    
+    if(package is null) {
+        context.Fail("SysML code should be enclosed in a package");
+        return;
+    }
+    var portDefinition = package?.OwnedElements?.Where(e => e.Kind == SysMLElementKind.PORT_DEFINITION)
+                                               ?.Where(e => e.Name == port.Name)?.FirstOrDefault();
+    
+    if(portDefinition is null) {
+        context.Fail($"Port {port.Name} not defined");
+        return;
+    }
+    if(portDefinition.Type != port.Type) {
+        context.Fail($"Port {port.Name} is of type {portDefinition.Type}. Should be {port.Type}");
+        return;
+    }
+
+    port.OwnedElements.ToList().ForEach(e => {
+        var owned = portDefinition.OwnedElements.Where(o => o.Name == e.Name).FirstOrDefault();
+        if(owned is null) {
+            context.Fail($"{e.Name} not found in {port.Name} definition");
+            return;
+        }
+        if(owned.Kind != e.Kind) {
+            var ownerKindText = GetKindText(owned.Kind);
+            var expectedKindText = GetKindText(e.Kind);
+            context.Fail($"{e.Name} is a {ownerKindText}. Should be a {expectedKindText}");
+            return;
+        }
+        if(owned.Type != e.Type) {
+            context.Fail($"{e.Name} has type {owned.Type}. Should be {e.Type}");
+            return;
+        }
+    });
+
+    context.Pass("👍");
+}
+
+Action<RuleContext> ruleFuelOutPort = context => 
+{
+    var ownedElements = new[]
+    {
+        new SysMLElement("temperature", SysMLElementKind.ATTRIBUTE_USAGE, new List<SysMLElement>(), "Temp"),
+        new SysMLElement("fuelSupply", SysMLElementKind.ITEM_USAGE_OUT, new List<SysMLElement>(), "Fuel"),
+        new SysMLElement("fuelReturn", SysMLElementKind.ITEM_USAGE_IN, new List<SysMLElement>(), "Fuel"),
+    };
+    var port = new SysMLElement("FuelOutPort", SysMLElementKind.PORT_DEFINITION, ownedElements, null);
+    PortIsDefined(port, context);
+};
+
+Action<RuleContext> ruleFuelInPort = context => {
+    var ownedElements = new[]
+    {
+        new SysMLElement("temperature", SysMLElementKind.ATTRIBUTE_USAGE, new List<SysMLElement>(), "Temp"),
+        new SysMLElement("fuelSupply", SysMLElementKind.ITEM_USAGE_IN, new List<SysMLElement>(), "Fuel"),
+        new SysMLElement("fuelReturn", SysMLElementKind.ITEM_USAGE_OUT, new List<SysMLElement>(), "Fuel"),
+    };
+    var port = new SysMLElement("FuelInPort", SysMLElementKind.PORT_DEFINITION, ownedElements, null);
+    PortIsDefined(port, context);
+};
+
+Lesson.CurrentChallenge.AddRule("FuelOutPort is defined", ruleFuelOutPort);
+Lesson.CurrentChallenge.AddRule("FuelInPort is defined", ruleFuelInPort);
+
+#!markdown
+
+## [Question]
+
+#!markdown
+
+## Step 3
+Now it's time to add the ports.  
+Add the definition of two new ports ```'FuelOutPort'``` and ```'FuelInPort'``` to your package.  
+Both ports contain an attribute ```'temperature'``` of type ```'Temp'``` and two items ```'fuelSupply '``` and ```'fuelReturn '```, both of type ```'Fuel'```.  
+
+In ```'FuelOutPort'``` the item ```'fuelReturn'``` should have the direction ```'in'``` and ```'fuelSupply'``` should have the direction ```'out'```.  
+In ```'FuelOutPort'``` the directions of ```'fuelReturn'``` and ```'fuelSupply'``` are the other way around.  
+
+#!markdown
+
+# Port Definition
+
+#!csharp
+
+#!sysml
+// your code goes here
+
+#!markdown
+
+## [Scratchpad]
+
+#!csharp
+
+#!model-answer
+#!sysml
+package 'Port Example' {
+	attribute def Temp;
+	part def Fuel;
+
+	port def FuelOutPort {
+		attribute temperature : Temp;
+		out item fuelSupply : Fuel;
+		in item fuelReturn : Fuel;
+	}
+
+	port def FuelInPort {
+    	attribute temperature : Temp;
+		in item fuelSupply : Fuel;
+		out item fuelReturn : Fuel;
+	}
+}
+
+#!markdown
+
+# [Challenge] PartDefinition
+
+#!csharp
+
+Lesson.ResetChallenge();
+
+#!csharp
+
+Lesson.CurrentChallenge.AddRule("Step 3 OK", context => 
+{
+    CodeInPackage(context);
+    AttributeDefinition(context);
+    ruleFuel(context);
+    ruleFuelOutPort(context);
+    ruleFuelInPort(context);
+});
+
+#!csharp
+
+Action<RuleContext> ruleFuelTank = context => {
+    var ownedElements = new[]
+    {
+        new SysMLElement("fuelTankPort", SysMLElementKind.PORT_USAGE, new List<SysMLElement>(), "FuelOutPort"),
+    };
+    var port = new SysMLElement("FuelTankAssembly", SysMLElementKind.PORT_DEFINITION, ownedElements, null);
+    PartIsDefined(port, context);
+};
+
+Action<RuleContext> ruleEngine = context => {
+    var ownedElements = new[]
+    {
+        new SysMLElement("engineFuelPort", SysMLElementKind.PORT_USAGE, new List<SysMLElement>(), "FuelInPort"),
+    };
+    var port = new SysMLElement("Engine", SysMLElementKind.PORT_DEFINITION, ownedElements, null);
+    PartIsDefined(port, context);
+};
+
+Lesson.CurrentChallenge.AddRule("FuelTankAssembly is defined", ruleFuelTank);
+Lesson.CurrentChallenge.AddRule("Engine is defined", ruleEngine);
+
+#!markdown
+
+## [Question]
+
+#!markdown
+
+# Part Definition
+
+#!markdown
+
+## Step 4
+You're almost there.
+Define the two remaining parts ```'FuelTankAssembly'``` and ```'Engine'```.  
+```'Engine'``` should have a port named ```'engineFuelPort'``` of type ```'FuelInPort'```.  
+```'FuelTankAssembly'``` should have a port named ```'fuelTankPort'``` of type ```'FuelOutPort'```.
+
+#!csharp
+
+#!sysml
+// your code goes here
+
+#!markdown
+
+## [Scratchpad]
+
+#!markdown
+
+# Part Definition
+
+#!csharp
+
+#!model-answer
+#!sysml
+package 'Port Example' {
+	attribute def Temp;
+	part def Fuel;
+
+	port def FuelOutPort {
+		attribute temperature : Temp;
+		out item fuelSupply : Fuel;
+		in item fuelReturn : Fuel;
+	}
+
+	port def FuelInPort {
+    	attribute temperature : Temp;
+		in item fuelSupply : Fuel;
+		out item fuelReturn : Fuel;
+	}
+
+	part def FuelTankAssembly {
+		port fuelTankPort : FuelOutPort;
+	}
+
+	part def Engine {
+		port engineFuelPort : FuelInPort;
+	}
+}

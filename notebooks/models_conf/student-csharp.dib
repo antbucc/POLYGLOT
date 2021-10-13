@@ -1,0 +1,8 @@
+#!csharp
+
+#r "nuget: Interactive.Journey"
+using Microsoft.DotNet.Interactive.Journey;
+
+#!csharp
+
+#!start-lesson --from-file "polyglot-csharp.dib"

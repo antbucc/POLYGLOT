@@ -1,0 +1,140 @@
+#!csharp
+
+#r "nuget: Interactive.Journey"
+#r "nuget: Polyglot.Interactive"
+
+#!csharp
+
+using Microsoft.DotNet.Interactive.Journey;
+using Polyglot.Interactive;
+using Polyglot.Gamification;
+using System.IO;
+
+#!csharp
+
+var courseId = "3";
+var userId = "6";
+
+#!csharp
+
+await KernelExtension.RegisterFormattersCSharpAsync();
+GamificationClient.Configure("615d4b8f08813b000102e779", "papyrus", "papyrus0704!", userId);
+var assignmentsToExclude = new List<int>();
+
+#!csharp
+
+Microsoft.DotNet.Interactive.Commands.SendEditableCode code = new("markdown", "## Assignments Completed!"); 
+var challengeDone = new Challenge(null, new[] { code }, null, "done");
+
+#!csharp
+
+async Task<Challenge> GetNextChallengeAsync()
+{
+    // local notebooks
+
+    // var rand = new Random();
+    // var nextChallengeNotebook = rand.Next(0, 2) switch {
+    //     0 => "csharp/char-uppercase.dib",
+    //     1 => "csharp/grading-system.dib",
+    //     _ => "csharp/grading-system.dib"
+    // };
+
+    // var document = await NotebookLessonParser.ReadFileAsInteractiveDocument(new FileInfo(nextChallengeNotebook));
+
+
+    // remote notebooks
+
+    var nextAssignment = await GamificationClient.Current.GetNextAssignmentAsync(userId, courseId, assignmentsToExclude);
+    
+    if(nextAssignment is null)
+    {
+        return challengeDone;
+    }
+
+    assignmentsToExclude.Add(int.Parse(nextAssignment.id));
+
+    var nextAssignmentNotebook = GamificationClient.Current.GetAssignmentNotebookUrl(nextAssignment.pathnamehash);
+    var document = await NotebookLessonParser.LoadNotebookFromUrl(new Uri(nextAssignmentNotebook));
+    
+    NotebookLessonParser.Parse(document, out var lessonDefinition, out var challengeDefinitions);
+
+    var challenges = challengeDefinitions.Select(c => c.ToChallenge()).ToList();
+    challenges.SetDefaultProgressionHandlers();
+    
+    // setup Polyglot default progression handlers
+    for (int i = 0; i < challenges.Count - 1; i++)
+    {
+        var j = i;
+        challenges[i].OnCodeSubmittedAsync(async context => 
+        {
+            var total = context.RuleEvaluations.Count();
+            var passed = context.RuleEvaluations.Where(r => r.Passed).Count();
+            var numberOfAttempts = context.SubmissionHistory.Count() + 1;
+            if(total == passed)
+            {
+                await GamificationClient.Current.ExerciseStepPassedAsync(courseId, nextAssignment.id, $"{numberOfAttempts}", nextAssignment.competencyid);
+                context.SetMessage($"Challenge '{challenges[j].Name}' completed!");
+                await context.StartChallengeAsync(challenges[j+1]);
+            }
+            else
+            {
+                await GamificationClient.Current.ExerciseFailedAsync(courseId, nextAssignment.id, $"{numberOfAttempts}", nextAssignment.competencyid);
+                context.SetMessage("Try again!");
+            }
+
+            var report = await GamificationClient.Current.GetReportAsync();
+            report.Display();
+        });
+    }
+        
+    var lastChallenge = challenges.Last();
+    lastChallenge.OnCodeSubmittedAsync(async context =>
+    {
+        var total = context.RuleEvaluations.Count();
+        var passed = context.RuleEvaluations.Where(r => r.Passed).Count();
+        var numberOfAttempts = context.SubmissionHistory.Count() + 1;
+        if(total == passed)
+        {
+            
+            await GamificationClient.Current.ExercisePassedAsync(courseId, nextAssignment.id, $"{numberOfAttempts}", nextAssignment.competencyid);
+            context.SetMessage($"Challenge '{lastChallenge.Name}' completed!");
+            var challenge = await GetNextChallengeAsync();
+            await context.StartChallengeAsync(challenge);
+        }
+        else
+        {
+            await GamificationClient.Current.ExerciseFailedAsync(courseId, nextAssignment.id, $"{numberOfAttempts}", nextAssignment.competencyid);
+            context.SetMessage("Try again!");
+        }
+        
+        var report = await GamificationClient.Current.GetReportAsync();
+        report.Display();
+    });
+    
+    return challenges.First();
+}
+
+#!markdown
+
+[Challenge] setupchallenge
+
+#!csharp
+
+Lesson.CurrentChallenge.OnCodeSubmittedAsync(async context => 
+{
+    var challenge = await GetNextChallengeAsync();
+    await context.StartChallengeAsync(challenge);
+});
+
+#!markdown
+
+[Question]
+
+#!markdown
+
+Polyglot setup done
+
+#!csharp
+
+// run this cell to start the lesson
+"i'm ready".Display();
