@@ -4,9 +4,9 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Security.Authentication;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http.Extensions;
 
 namespace Polyglot.Gamification
 {
@@ -15,16 +15,17 @@ namespace Polyglot.Gamification
         public static GamificationClient Current { get; private set; }
         private GameStatus _gameStatus;
         private readonly HttpClient _client;
-        private DateTime? _lastRun;
         private string _currentLevel = "0";
         public string GameId { get; }
         public string UserId { get; }
         public string Password { get; }
         public string PlayerId { get; }
         public Uri ServerUrl { get; }
+        public Uri LMSUrl { get; }
         public static string DefaultServerUrl { get; } = "http://139.177.202.145:9090/";
+        public static string DefaultLMSUrl { get; } = "http://93.104.214.51/dashboard/local/api/";
 
-        private GamificationClient(string gameId, string userId, string password, string playerId, string serverUrl,
+        private GamificationClient(string gameId, string userId, string password, string playerId, string serverUrl, string lmsUrl,
             HttpClient httpClient)
         {
             if (string.IsNullOrWhiteSpace(gameId))
@@ -52,83 +53,96 @@ namespace Polyglot.Gamification
                 throw new ArgumentException("Value cannot be null or whitespace.", nameof(serverUrl));
             }
 
+            if (string.IsNullOrWhiteSpace(lmsUrl))
+            {
+                throw new ArgumentException("Value cannot be null or whitespace.", nameof(lmsUrl));
+            }
+
             GameId = gameId;
             UserId = userId;
             Password = password;
             PlayerId = playerId;
             ServerUrl = new Uri(serverUrl);
+            LMSUrl = new Uri(lmsUrl);
             _client = httpClient;
-            
+
         }
 
         public static void Configure(string gameId, string userId, string password, string playerId,
             string serverUrl = null, Func<HttpClient> clientFactory = null)
         {
+            Reset();
             Current = new GamificationClient(gameId, userId, password, playerId,
-                string.IsNullOrWhiteSpace(serverUrl) ? DefaultServerUrl : serverUrl, clientFactory?.Invoke() ?? new HttpClient());
+                string.IsNullOrWhiteSpace(serverUrl) ? DefaultServerUrl : serverUrl, DefaultLMSUrl, clientFactory?.Invoke() ?? new HttpClient());
         }
 
-        public async Task<GameStateReport> InvokeGamification(IReadOnlyDictionary<string, object> data)
+        public async Task<AssignmentFileResponseBody> GetNextAssignmentAsync(string userId, string courseId, List<int> assignmentsToExclude)
         {
-            var authenticated = await EnsureAuthentication();
-            if(!authenticated)
-            {
-                throw new AuthenticationException("Failed authentication with the credentials provided.");
-            }
+            var parameters = new Dictionary<string, string>
+        {
+            { "action", "assignmentfile" },
+            { "authtoken", "9fc7714b3e9eb904191427479baea02b" },
+            { "userid", userId },
+            { "courseid", courseId }
+        };
 
-            var callUrl = new Uri(ServerUrl, "api/submit-code");
 
-            var bodyObject = new
-            {
-                gameId = GameId,
-                playerId = PlayerId,
-                exerciseNumber = _currentLevel,
-                lastRun = _lastRun,
-                data
-            };
+            var builder = new QueryBuilder(parameters);
+            assignmentsToExclude.ForEach(id => builder.Add("excludeAssignIds[]", $"{id}"));
 
-            var response = await _client.PostAsync(callUrl, bodyObject.ToBody());
-            _lastRun = DateTime.Now;
-            
+            var callUrl = new Uri(LMSUrl, builder.ToString());
+
+            var response = await _client.GetAsync(callUrl);
             if (response.StatusCode != HttpStatusCode.OK)
             {
                 return null;
             }
 
-            return await GetGameStateReportFromResponseAsync(response);
+            var contents = await response.Content.ReadAsStringAsync();
+            var assignment = contents.ToObject<AssignmentFileResponse>();
+            return assignment?.response;
         }
 
-        private async Task<bool> EnsureAuthentication()
+        public string GetAssignmentNotebookUrl(string pathnamehash)
         {
-            var callUrl = new Uri(ServerUrl, "oauth/token");
+            var parameters = new Dictionary<string, string>
+        {
+            { "action", "file" },
+            { "authtoken", "9fc7714b3e9eb904191427479baea02b" },
+            { "pathnamehash", pathnamehash }
+        };
 
-            var authenticationContent = new Dictionary<string, string>
+            var builder = new QueryBuilder(parameters);
+            return LMSUrl + builder.ToString();
+        }
+
+        public async Task<string> ExercisePassedAsync(string courseId, string assignmentId, string numberOfAttempts, string competencyId) => await SubmitExerciseStatusAsync(courseId, assignmentId, numberOfAttempts, competencyId, "pass");
+        public async Task<string> ExerciseStepPassedAsync(string courseId, string assignmentId, string numberOfAttempts, string competencyId) => await SubmitExerciseStatusAsync(courseId, assignmentId, numberOfAttempts, competencyId, "stepPass");
+        public async Task<string> ExerciseFailedAsync(string courseId, string assignmentId, string numberOfAttempts, string competencyId) => await SubmitExerciseStatusAsync(courseId, assignmentId, numberOfAttempts, competencyId, "fail");
+
+        private async Task<string> SubmitExerciseStatusAsync(string courseId, string assignmentId, string numberOfAttempts, string competencyId, string status)
+        {
+            var parameters = new Dictionary<string, string>
             {
-                { "grant_type", "password" },
-                { "username", UserId },
-                { "password", Password }
+                { "action", "assignmentDone" },
+                { "authtoken", "9fc7714b3e9eb904191427479baea02b" },
+                { "userid", PlayerId },
+                { "courseid", courseId },
+                { "assignmentid", assignmentId },
+                { "competencyid", competencyId },
+                { "numberofattempts", numberOfAttempts },
+                { "result", status }
             };
 
-            // login authentication token
-            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", "NjRiMDRkZDgtY2Y0Zi00MzU2LTk1OGItNzY1ZTNkOGY0MzM4OnBvbHlnbG90");
 
-            using var encodedContent = new FormUrlEncodedContent(authenticationContent);
-            encodedContent.Headers.Clear();
-            encodedContent.Headers.Add("Content-Type", "application/x-www-form-urlencoded");
-            var response = await _client.PostAsync(callUrl, encodedContent);
+            var builder = new QueryBuilder(parameters);
+            var callUrl = new Uri(LMSUrl, builder.ToString());
 
-            if (response.StatusCode == HttpStatusCode.OK)
-            {
-                var responseContent = await response.Content.ReadAsStringAsync();
-                var auth = responseContent.ToObject<AuthenticationResponse>();
-                _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", auth.access_token);
-                return true;
-            }
-            return false;
-
+            var response = await _client.PostAsync(callUrl, (new { }).ToBody());
+            return response.StatusCode.ToString();
         }
 
-        public async Task<GameStateReport> GetReportAsync()
+        public async Task<GameStatus> GetReportAsync()
         {
             var callUrlStatus = new Uri("https://dev.smartcommunitylab.it/gamification-v3/");
             callUrlStatus = new Uri(callUrlStatus, $"data/game/{GameId}/player/{PlayerId}");
@@ -149,31 +163,33 @@ namespace Polyglot.Gamification
                 $"Failed Game Engine Step, Code: {responseStatus.StatusCode}, Reason: {responseStatus.ReasonPhrase}");
         }
 
-        private async Task<GameStateReport> GetGameStateReportFromResponseAsync(HttpResponseMessage response)
+        private async Task<GameStatus> GetGameStateReportFromResponseAsync(HttpResponseMessage response)
         {
             var contents = await response.Content.ReadAsStringAsync();
 
             var gameStatus = contents.ToObject<GameStatus>();
 
+            _gameStatus = gameStatus;
+
+            return gameStatus;
+
             // report the new status to the player
-            _gameStatus = gameStatus with { CustomData = gameStatus.CustomData with { Level = gameStatus.CustomData.Level ?? "0" } };
-            _currentLevel = _gameStatus.CustomData.Level;
+            //_gameStatus = gameStatus with { CustomData = gameStatus.CustomData with { Level = gameStatus.CustomData.Level ?? "0" } };
+            //_currentLevel = _gameStatus.CustomData.Level;
 
-            var scoring = gameStatus.State.PointConcept.ToDictionary(p => p.Name);
+            //var scoring = gameStatus.State.PointConcept.ToDictionary(p => p.Name);
 
-            return new GameStateReport(_currentLevel,
-                scoring["exercisePoints"].Score,
-                scoring["assignmentPoints"].Score,
-                scoring["exerciseGoldCoins"].Score,
-                scoring["assignmentGoldCoins"].Score,
-                _gameStatus.CustomData.Feedbacks?.Select(f => f.Text) ?? new List<string>());
+            //return new GameStateReport(scoring["exercisePoints"].Score,
+            //    scoring["assignmentPoints"].Score,
+            //    scoring["exerciseGoldCoins"].Score,
+            //    scoring["assignmentGoldCoins"].Score,
+            //    _gameStatus.CustomData.Feedbacks?.Select(f => f.Text) ?? new List<string>());
         }
 
         public static void Reset()
         {
-            Current._client.Dispose();
+            Current?._client.Dispose();
             Current = null;
         }
     }
-
 }
