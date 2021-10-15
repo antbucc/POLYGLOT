@@ -115,8 +115,8 @@ namespace SysML.Interactive
             {
                 var psi = new ProcessStartInfo
                 {
-                    FileName = "java.exe",
-                    Arguments = " -version",
+                    FileName = "java",
+                    Arguments = " --version",
                     RedirectStandardError = true,
                     UseShellExecute = false
                 };
