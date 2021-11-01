@@ -4,11 +4,10 @@ A Gamified .NET Interactive Framework for Teaching and Learning Multi-Language P
 
 Currently, Polyglot only works with C# but we're working on the support for the other .NET Interactive languages (F#, Javascript, ...) and [SysML V2](https://www.omgsysml.org/SysML-2.htm)
 
-See it in action in the video below!
+See it in action in the videos below!
 
-https://user-images.githubusercontent.com/41111850/124148288-cda12280-da8f-11eb-8962-dc2e77bdbdb0.mp4
-
-
+https://user-images.githubusercontent.com/41111850/139651251-b91b0deb-e5df-4901-bd7e-aed423b04433.mp4
+https://user-images.githubusercontent.com/41111850/139651436-ab99f0cc-312d-4cdd-b1b0-39f23cb80fe9.mp4
 
 ## How to contribute
 
