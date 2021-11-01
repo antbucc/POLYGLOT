@@ -7,7 +7,10 @@ Currently, Polyglot only works with C# but we're working on the support for the 
 See it in action in the videos below!
 
 
-https://user-images.githubusercontent.com/41111850/139651251-b91b0deb-e5df-4901-bd7e-aed423b04433.mp4
+
+
+https://user-images.githubusercontent.com/41111850/139651588-cb775250-209f-4654-b811-9777544e136b.mp4
+
 
 
 
